@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-012 ビル詳細｜Option 2 UI刷新（提案用イメージ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ==== Option 2 共通（design-system.md と同期。5画面で同一ブロック） ==== */
+:root {
+  --primary: #2563EB; --primary-h: #1D4ED8; --primary-50: #EFF6FF; --primary-100: #DBEAFE;
+  --secondary: #3B82F6;
+  --bg: #F8FAFC; --surface: #FFFFFF; --surface-2: #F1F5F9;
+  --text: #1E293B; --muted: #475569; --subtle: #64748B;
+  --border: #E2E8F0; --border-s: #CBD5E1;
+  --cta: #F97316; --cta-h: #FB923C; --cta-ink: #431407;
+  --danger: #B91C1C; --danger-50: #FEF2F2;
+  --ok: #166534; --ok-50: #DCFCE7;
+  --rfi: #6D28D9; --rfi-50: #F5F3FF; --rfi-b: #A78BFA;
+  --a0: #166534; --a0b: #DCFCE7;  /* 空 */
+  --a1: #115E59; --a1b: #CCFBF1;  /* 未解約 */
+  --a2: #92400E; --a2b: #FEF3C7;  /* 先行有 */
+  --a3: #9F1239; --a3b: #FFE4E6;  /* 申込有 */
+  --a4: #5B21B6; --a4b: #EDE9FE;  /* 内定有 */
+  --a5: #334155; --a5b: #E2E8F0;  /* 済 */
+  --r: 6px; --r-s: 4px;
+  --sh: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.08);
+  --sh-l: 0 8px 24px rgba(15,23,42,.16);
+  --t: 180ms ease;
+  --side: 208px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 1440px; background: var(--bg); color: var(--text);
+  font: 400 13px/1.55 "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.num, .tbl td.r, .kv dd.num, input.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.35; }
+h1 { font-size: 20px; font-weight: 700; }
+h2 { font-size: 15px; font-weight: 700; }
+h3 { font-size: 13px; font-weight: 700; }
+a { color: var(--primary); text-decoration: none; transition: color var(--t); }
+a:hover { color: var(--primary-h); text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--primary-h); outline-offset: 2px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+.i-s { width: 14px; height: 14px; }
+.i-l { width: 20px; height: 20px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; z-index: 99; padding: 8px 12px; background: var(--surface); }
+.skip:focus { left: 8px; top: 8px; }
+
+/* ---- 提案用リボン（製品UIではない） ---- */
+.ribbon { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 16px; background: #0F172A; color: #E2E8F0; font-size: 12px; }
+.ribbon .stamp { padding: 2px 10px; border-radius: 3px; background: var(--cta); color: var(--cta-ink); font-weight: 700; letter-spacing: .04em; }
+.ribbon .opt { font-weight: 700; color: #fff; }
+.ribbon .flow { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
+.ribbon .flow a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; color: #CBD5E1; }
+.ribbon .flow a b { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #334155; color: #fff; font-size: 11px; }
+.ribbon .flow a:hover { background: #1E293B; color: #fff; text-decoration: none; }
+.ribbon .flow a[aria-current] { background: #fff; color: #0F172A; font-weight: 700; }
+.ribbon .flow a[aria-current] b { background: var(--primary); }
+.ribbon .flow .sep { color: #64748B; }
+.ribbon .rt { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.ribbon .rt a { color: #BFDBFE; }
+.ribbon label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.ribbon .fict { color: #94A3B8; }
+
+/* ---- アプリシェル ---- */
+.app { display: grid; grid-template-columns: var(--side) 1fr; min-height: calc(100vh - 40px); }
+.side { position: sticky; top: 40px; height: calc(100vh - 40px); overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; }
+.brand { display: flex; align-items: center; gap: 8px; padding: 2px 8px 14px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.brand .mk { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: var(--primary); color: #fff; }
+.brand b { display: block; font-size: 13px; }
+.brand small { display: block; color: var(--subtle); font-size: 11px; }
+.side .grp { margin: 12px 8px 4px; color: var(--subtle); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.side ul { margin: 0; padding: 0; list-style: none; }
+.side a { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--r-s); color: var(--muted); font-weight: 500; transition: background var(--t), color var(--t); }
+.side a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.side a[aria-current] { background: var(--primary-50); color: var(--primary-h); box-shadow: inset 3px 0 0 var(--primary); }
+.side .perm { margin: 14px 8px 0; color: var(--subtle); font-size: 11px; line-height: 1.5; }
+.main { min-width: 0; }
+.top { position: sticky; top: 40px; z-index: 40; display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--border); }
+.crumb { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.crumb li + li::before { content: "/"; margin-right: 6px; color: var(--border-s); }
+.crumb [aria-current] { color: var(--text); font-weight: 500; }
+.user { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 12px; }
+.avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary-100); color: var(--primary-h); font-weight: 700; font-size: 12px; }
+.content { padding: 20px 24px 96px; }
+
+/* ---- 汎用部品 ---- */
+.page-h { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.page-h .ttl { flex: 1; min-width: 0; }
+.page-h .sub { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.page-h .acts { display: flex; gap: 8px; align-items: center; }
+.row { display: flex; align-items: center; gap: 8px; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.ml-auto { margin-left: auto; }
+.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; }
+.muted { color: var(--muted); } .small { font-size: 12px; } .xs { font-size: 11px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); }
+.card-h { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.card-b { padding: 16px; }
+.card + .card { margin-top: 16px; }
+.sec-t { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+.sec-t:first-child { margin-top: 0; }
+.sec-t::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid var(--border-s); border-radius: var(--r-s);
+  background: var(--surface); color: var(--text); font: inherit; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t); }
+.btn:hover { background: var(--surface-2); border-color: #94A3B8; text-decoration: none; color: var(--text); }
+.btn:active { transform: translateY(1px); }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-p { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-h); border-color: var(--primary-h); color: #fff; }
+.btn-cta { background: var(--cta); border-color: #EA580C; color: var(--cta-ink); font-weight: 700; }
+.btn-cta:hover { background: var(--cta-h); border-color: #EA580C; color: var(--cta-ink); box-shadow: 0 2px 8px rgba(249,115,22,.35); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); border-color: transparent; }
+.btn-dg { color: var(--danger); }
+.btn-dg:hover { background: var(--danger-50); border-color: #FCA5A5; color: var(--danger); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.ib { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: var(--r-s); background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t), color var(--t); }
+.ib:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.ib.dg:hover { background: var(--danger-50); color: var(--danger); }
+.ib-sm { width: 28px; height: 28px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > label, .field > .lb { color: var(--muted); font-size: 12px; font-weight: 500; }
+.field .help { color: var(--subtle); font-size: 11px; }
+.field .err { display: flex; align-items: center; gap: 4px; color: var(--danger); font-size: 12px; }
+.inp, select.inp, textarea.inp { width: 100%; height: 34px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: var(--r-s); background: var(--surface); color: var(--text); font: inherit; transition: border-color var(--t), box-shadow var(--t); }
+textarea.inp { height: auto; min-height: 64px; padding: 8px 10px; line-height: 1.55; resize: vertical; }
+.inp:hover { border-color: #94A3B8; }
+.inp:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
+.inp[readonly] { background: var(--surface-2); color: var(--muted); }
+.inp.is-err { border-color: var(--danger); }
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.g6 { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 12px; }
+.span2 { grid-column: span 2; } .span3 { grid-column: span 3; } .span4 { grid-column: span 4; } .full { grid-column: 1 / -1; }
+.ck { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; }
+.ck input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+
+/* チップ（トグル選択） */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: 14px; background: var(--surface); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t); }
+.chip:hover { border-color: var(--secondary); color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--primary-50); border-color: var(--primary); color: var(--primary-h); font-weight: 500; }
+.chip[aria-pressed="true"]::before { content: ""; width: 10px; height: 6px; margin: -3px 2px 0 0; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.chip.rm { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+
+/* ピル（状態表示） */
+.pill { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 12px; font-weight: 500; white-space: nowrap; background: var(--surface-2); color: var(--muted); }
+.pill .i { width: 13px; height: 13px; }
+.pill.blue { background: var(--primary-100); color: #1E40AF; }
+.pill.green { background: var(--ok-50); color: var(--ok); }
+.pill.gray { background: var(--a5b); color: var(--a5); }
+.pill.red { background: var(--danger-50); color: var(--danger); }
+.pill.amber { background: var(--a2b); color: var(--a2); }
+.aki { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 6px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.aki .i { width: 13px; height: 13px; stroke-width: 2.4; }
+.aki-0 { background: var(--a0b); color: var(--a0); } .aki-1 { background: var(--a1b); color: var(--a1); } .aki-2 { background: var(--a2b); color: var(--a2); }
+.aki-3 { background: var(--a3b); color: var(--a3); } .aki-4 { background: var(--a4b); color: var(--a4); } .aki-5 { background: var(--a5b); color: var(--a5); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+
+/* RFI 注記バッジ（機能は未実装・配置予定のみ） */
+.rfi { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border: 1px dashed var(--rfi-b); border-radius: 10px; background: var(--rfi-50); color: var(--rfi); font-size: 11px; font-weight: 500; white-space: nowrap; cursor: help; vertical-align: middle; }
+.rfi .i { width: 12px; height: 12px; }
+body.no-rfi .rfi { display: none; }
+
+/* キー・値 */
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin: 0; }
+.kv dt { color: var(--muted); font-size: 12px; }
+.kv dd { margin: 0; min-width: 0; }
+.kv-g { display: grid; gap: 1px; margin: 0; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-s); overflow: hidden; }
+.kv-g > div { padding: 6px 10px; background: var(--surface); }
+.kv-g dt { color: var(--muted); font-size: 11px; }
+.kv-g dd { margin: 0; font-weight: 500; }
+
+/* テーブル */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-s); background: var(--surface); }
+.tbl-wrap:focus-visible { outline-offset: -2px; }
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.tbl th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: var(--surface-2); border-bottom: 1px solid var(--border-s); color: var(--muted); font-weight: 500; text-align: left; white-space: nowrap; }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tbl tbody tr { transition: background var(--t); }
+.tbl tbody tr:hover > td { background: #F8FAFC; }
+.tbl tr:last-child > td { border-bottom: 0; }
+.tbl .r { text-align: right; } .tbl .c { text-align: center; }
+.tbl th.r { text-align: right; }
+.tbl .nw { white-space: nowrap; }
+.tbl .sel { width: 36px; text-align: center; }
+.tbl tr.done > td { background: #F8FAFC; color: var(--muted); }
+.tbl .grp-h { background: #EEF2F7; color: var(--text); font-weight: 700; }
+.tbl .stk { position: sticky; left: 0; z-index: 2; background: inherit; }
+.sub-l { display: block; color: var(--subtle); font-size: 11px; }
+
+/* タブ */
+.tabs { display: flex; gap: 2px; padding: 0 12px; border-bottom: 1px solid var(--border); }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; transition: color var(--t); }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--primary-h); font-weight: 700; }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--primary); }
+.tab .cnt { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 11px; line-height: 18px; text-align: center; }
+.tab .was { color: var(--subtle); font-size: 11px; font-weight: 400; }
+.panel { padding: 16px; }
+.panel[hidden] { display: none; }
+
+/* ドロップダウン（details） */
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu .pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh-l); }
+.menu .pop a, .menu .pop button { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: var(--r-s); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.menu .pop a:hover, .menu .pop button:hover { background: var(--surface-2); text-decoration: none; }
+.menu .pop .hd { padding: 6px 10px 2px; color: var(--subtle); font-size: 11px; }
+
+/* 統計タイル */
+.stats { display: grid; gap: 12px; }
+.stat { padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); min-width: 0; }
+.stat .lb { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.stat .v { margin-top: 4px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.stat .n { margin-top: 2px; color: var(--subtle); font-size: 11px; }
+
+/* 空状態・表示パターン */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px; color: var(--muted); text-align: center; }
+.empty .i { width: 28px; height: 28px; color: var(--subtle); }
+details.pattern { margin-top: 12px; color: var(--muted); font-size: 12px; }
+details.pattern > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+details.pattern .box { margin-top: 8px; padding: 12px; border: 1px dashed var(--border-s); border-radius: var(--r); background: var(--surface); }
+
+/* 一括操作バー / 固定フッター */
+.bulk { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #BFDBFE; border-radius: var(--r); background: var(--primary-50); }
+.bulk .cnt { font-weight: 700; color: var(--primary-h); }
+.dock { position: fixed; left: var(--side); right: 0; bottom: 0; z-index: 45; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 24px; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 16px rgba(15,23,42,.08); }
+.thumb { display: grid; place-items: center; background: repeating-linear-gradient(135deg, #E2E8F0 0 8px, #F1F5F9 8px 16px); border-radius: var(--r-s); color: var(--subtle); }
+.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 12px; }
+.modal-bg { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgba(15,23,42,.45); }
+.modal-bg[hidden] { display: none; }
+.modal { width: 440px; background: var(--surface); border-radius: 8px; box-shadow: var(--sh-l); }
+.modal .mh { padding: 16px 20px 0; }
+.modal .mb { padding: 10px 20px 16px; color: var(--muted); }
+.modal .mf { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); }
+
+/* ==== 画面固有 ==== */
+.code { padding: 2px 8px; border-radius: 3px; background: var(--surface-2); color: var(--muted); font-size: 13px; font-weight: 500; }
+select.stsel { width: 132px; height: 30px; border-color: #93C5FD; background: var(--primary-50); color: #1E40AF; font-weight: 700; }
+.band { display: grid; grid-template-columns: 200px 1.3fr 1fr 1.2fr 1.3fr; }
+.band > div { padding: 14px 16px; min-width: 0; }
+.band > div + div { border-left: 1px solid var(--border); }
+.band .photo { padding: 12px; }
+.band .thumb { width: 100%; height: 124px; }
+.band .lb { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
+.band .big { font-size: 18px; font-weight: 700; }
+.band .kv { gap: 4px 10px; font-size: 12px; }
+.fresh { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); font-size: 12px; font-weight: 500; }
+.akisum { display: flex; flex-wrap: wrap; gap: 6px; }
+.tel { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700; }
+.two { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 16px; }
+.two > .card { margin-top: 0; }
+.bk { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bk .full { grid-column: 1 / -1; }
+.scope { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; padding: 0 6px; border-radius: 3px; font-size: 11px; font-weight: 500; }
+.scope.in { background: #FFF7ED; color: #9A3412; } .scope.out { background: var(--primary-50); color: #1E40AF; }
+.seg { display: inline-flex; border: 1px solid var(--border-s); border-radius: var(--r-s); overflow: hidden; }
+.seg label { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; cursor: pointer; font-size: 12px; color: var(--muted); border-left: 1px solid var(--border-s); transition: background var(--t); }
+.seg label:first-child { border-left: 0; }
+.seg input { position: absolute; opacity: 0; }
+.seg label:has(input:checked) { background: var(--primary); color: #fff; font-weight: 700; }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--primary-h); outline-offset: -2px; }
+.seg label:hover { background: var(--surface-2); }
+.seg label:has(input:checked):hover { background: var(--primary-h); }
+.yo { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 2px; border-radius: 3px; background: var(--surface-2); color: var(--subtle); font-size: 11px; }
+.yo.on { background: #1E293B; color: #fff; }
+.price { font-weight: 700; }
+.gal { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.gal .thumb { height: 120px; flex-direction: column; gap: 4px; font-size: 12px; }
+.pgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+.pgrid label { position: relative; display: block; }
+.pgrid .thumb { height: 72px; }
+.pgrid input { position: absolute; left: 6px; top: 6px; accent-color: var(--primary); }
+.stars { display: inline-flex; gap: 2px; height: 34px; align-items: center; color: #CBD5E1; }
+.stars .on { color: #B45309; fill: currentColor; }
+.subnav { display: flex; gap: 6px; margin-bottom: 12px; }
+</style>
+<script src="../shared/mock-data.js"></script>
+<script>
+/* ==== Option 2 共通 JS（5画面で同一ブロック） ==== */
+var UI = (function () {
+  var M = window.MOCK;
+  var AKI_ICON = ['aki0', 'aki1', 'aki2', 'aki3', 'aki4', 'aki5'];
+  function ic(name, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+  function aki(i, item) { return '<span class="aki aki-' + i + '"' + (item ? ' data-item="' + item + '"' : '') + '>' + ic(AKI_ICON[i]) + M.AKI[i] + '</span>'; }
+  function di(on, id) { return on ? ' data-item="' + id + '"' : ''; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function get(ctx, path) { return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, ctx); }
+  /* data-bind="C.comName" に MOCK の値を流し込む（data-fmt: yen / f2） */
+  function bind(ctx, root) {
+    (root || document).querySelectorAll('[data-bind]').forEach(function (el) {
+      var v = get(ctx, el.getAttribute('data-bind')), f = el.getAttribute('data-fmt');
+      if (v == null) v = '';
+      if (f === 'yen' && v !== '') v = M.yen(v);
+      if (f === 'f2' && v !== '') v = Number(v).toFixed(2);
+      if (el.type === 'checkbox') { el.checked = !!v; return; }
+      if (el.tagName === 'SELECT') { el.innerHTML = '<option>' + esc(v) + '</option>'; return; }
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v; else el.textContent = v;
+    });
+  }
+  /* チップ群（マスタ由来ラベルは仮） */
+  function chips(el, all, on, item) {
+    el.innerHTML = all.map(function (l) { return '<button type="button" class="chip" aria-pressed="' + (on.indexOf(l) >= 0) + '">' + esc(l) + '</button>'; }).join('');
+    if (item) el.setAttribute('data-item', item);
+  }
+  /* タブ（キーボード ←→ 対応） */
+  function tabs(list) {
+    var ts = Array.prototype.slice.call(list.querySelectorAll('[role=tab]'));
+    function sel(t) {
+      ts.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute('aria-controls')).hidden = !on; });
+    }
+    ts.forEach(function (t, i) {
+      t.addEventListener('click', function () { sel(t); });
+      t.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+        var n = ts[(i + d + ts.length) % ts.length]; n.focus(); sel(n);
+      });
+    });
+    sel(ts.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0] || ts[0]);
+  }
+  function addr(b) { return b.pref + b.chikuName + b.address + b.cyoume + '-' + b.banchi + '-' + b.gou; }
+  function daysSince(d) { var a = new Date(M.today.replace(/\//g, '-')), b = new Date(d.replace(/\//g, '-')); return Math.round((a - b) / 864e5); }
+  document.addEventListener('DOMContentLoaded', function () {
+    var t = document.getElementById('rfiToggle');
+    if (t) t.addEventListener('change', function () { document.body.classList.toggle('no-rfi', !t.checked); });
+    document.querySelectorAll('.chips').forEach(function (g) {
+      g.addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c && !c.classList.contains('rm')) c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true'); });
+    });
+    document.querySelectorAll('[role=tablist]').forEach(tabs);
+    document.addEventListener('click', function (e) { document.querySelectorAll('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+  });
+  return { M: M, ic: ic, aki: aki, di: di, esc: esc, bind: bind, chips: chips, tabs: tabs, addr: addr, daysSince: daysSince };
+})();
+</script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<!-- Lucide 準拠の線アイコン（24x24 / stroke 2）。絵文字は使わない -->
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol>
+<symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+<symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+<symbol id="i-bookmark-plus" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><path d="M12 7v6"/><path d="M15 10H9"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+<symbol id="i-train" viewBox="0 0 24 24"><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></symbol>
+<symbol id="i-columns" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></symbol>
+<symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+<symbol id="i-sort" viewBox="0 0 24 24"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<!-- フロア状況 6 種（色＋アイコン＋文字の三重表示） -->
+<symbol id="i-aki0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></symbol>
+<symbol id="i-aki1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-aki2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+<symbol id="i-aki3" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 15h6"/></symbol>
+<symbol id="i-aki4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+<symbol id="i-aki5" viewBox="0 0 24 24"><rect width="16" height="10" x="4" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+</svg>
+
+<a class="skip" href="#main">本文へスキップ</a>
+<div class="ribbon" role="region" aria-label="提案用ナビゲーション（製品UIではありません）">
+  <span class="stamp">提案用イメージ</span><span class="opt">Option 2　UI刷新</span>
+  <nav class="flow" aria-label="業務フロー 物件出し〜提案送付"><a href="adm-073.html"><b>1</b>顧客設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-030.html"><b>2</b>物件一覧</a><span class="sep" aria-hidden="true">›</span><a href="adm-012.html" aria-current="page"><b>3</b>ビル詳細</a><span class="sep" aria-hidden="true">›</span><a href="adm-096.html"><b>4</b>レポート ビル設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-086.html"><b>5</b>レポートリスト</a></nav>
+  <div class="rt">
+    <label><input type="checkbox" id="rfiToggle" checked> RFI注記を表示</label>
+    <a href="../index.html#screens/012/option1" target="_top">Option 1 で見る</a>
+    <a href="../index.html#about" target="_top">モック一覧</a>
+    <span class="fict">データはすべて架空です</span>
+  </div>
+</div>
+<div class="app">
+  <aside class="side" aria-label="グローバルメニュー">
+    <div class="brand"><span class="mk"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg></span><div><b>貸事務所ドットコム</b><small>管理システム</small></div></div>
+    <nav data-item="030-01" aria-label="グローバルメニュー"><div class="grp">営業</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-dash"/></svg>ダッシュボード</a></li><li><a href="#" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>物件</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>顧客</a></li></ul><div class="grp">Webコンテンツ</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg>特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg>エリア特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-trend"/></svg>相場</a></li></ul><div class="grp">管理</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-key"/></svg>オーナー</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-train"/></svg>路線</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-db"/></svg>マスター</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg>スタッフ</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>ログ</a></li></ul></nav>
+    <p class="perm">表示メニューは権限により変わります（現行仕様どおり）。</p>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <ol class="crumb" aria-label="パンくず"><li>物件</li><li><a href="adm-030.html">物件一覧</a></li><li aria-current="page">ビル詳細</li></ol>
+      <div class="user" data-item="030-02"><span class="avatar" aria-hidden="true">佐</span><span>ログイン中：<b id="loginName"></b> さん</span></div>
+    </header>
+    <main id="main" class="content">
+
+<div class="page-h">
+  <div class="ttl" data-item="012-01">
+    <div class="row wrap">
+      <span class="code num" data-item="012-04" data-bind="B.code"></span>
+      <h1 data-bind="B.name"></h1>
+      <label class="sr" for="st">状態</label><select class="inp stsel" id="st" data-item="012-07" data-bind="B.status"></select>
+      <span class="rfi" title="物件登録・更新の追加要件（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-01・P-02</span>
+    </div>
+    <div class="sub row"><span>ビル詳細</span><span aria-hidden="true">・</span><span data-bind="B.kana"></span><span aria-hidden="true">・</span><span data-bind="B.oldName"></span></div>
+  </div>
+  <div class="acts">
+    <a class="btn" href="adm-030.html"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>物件一覧へ戻る</a>
+    <button class="btn btn-dg" type="button" data-item="012-02"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>削除</button>
+    <button class="btn btn-cta" type="button" data-item="012-03"><svg class="i" aria-hidden="true"><use href="#i-save"/></svg>保存</button>
+  </div>
+</div>
+
+<!-- 空室確認に必要な情報を1行に集約：外観・所在・最終確認・問合せ先・フロア状況 -->
+<section class="card band" aria-label="ビル概要">
+  <div class="photo"><div class="thumb" data-item="012-08" role="img" aria-label="外観写真"><svg class="i i-l" aria-hidden="true"><use href="#i-image"/></svg></div></div>
+  <div>
+    <div class="lb"><svg class="i i-s" aria-hidden="true"><use href="#i-pin"/></svg>所在・建物</div>
+    <dl class="kv" id="facts"></dl>
+  </div>
+  <div>
+    <div class="lb">最終確認 <span class="rfi" title="確認日からの経過による鮮度管理（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-07</span></div>
+    <div data-item="012-06"><span class="big num" data-bind="B.checkDate"></span> <span data-bind="B.checkStaff"></span></div>
+    <div class="fresh" id="fresh"></div>
+    <p class="xs muted" style="margin:6px 0 0">連絡先の確認日と一致させて更新します</p>
+    <div class="small muted mt8" data-item="012-05">最終更新 <span class="num" data-bind="B.updated"></span></div>
+  </div>
+  <div>
+    <div class="lb"><svg class="i i-s" aria-hidden="true"><use href="#i-phone"/></svg>問合せ先（空室確認）</div>
+    <div id="inq"></div>
+  </div>
+  <div>
+    <div class="lb"><svg class="i i-s" aria-hidden="true"><use href="#i-layers"/></svg>フロア状況</div>
+    <div class="akisum" id="akisum"></div>
+    <div class="small muted mt8">賃料（坪単価） <b class="num" id="range" style="color:var(--text)"></b></div>
+  </div>
+</section>
+
+<div class="two">
+  <section class="card" data-item="012-23" aria-label="備考">
+    <div class="card-h"><h2>備考</h2><span class="rfi" title="備考の区分管理・検索（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-11</span></div>
+    <div class="card-b bk">
+      <div class="field" data-item="012-24"><label for="b1">営業備考<span class="scope in"><svg class="i i-s" aria-hidden="true"><use href="#i-lock"/></svg>社内のみ</span></label><textarea class="inp" id="b1" rows="2" data-bind="B.biko.sales"></textarea></div>
+      <div class="field" data-item="012-25"><label for="b2">外部備考<span class="scope out"><svg class="i i-s" aria-hidden="true"><use href="#i-globe"/></svg>お客様に表示</span></label><textarea class="inp" id="b2" rows="2" data-bind="B.biko.external"></textarea></div>
+      <div class="field full" data-item="012-26"><label for="b3">社内依頼</label><input class="inp" id="b3" data-bind="B.biko.request"></div>
+    </div>
+  </section>
+  <section class="card" aria-label="汎用チェック・添付">
+    <div class="card-h"><h2>汎用チェック</h2><span class="xs muted">ラベルはマスタ設定値（モックは仮）</span></div>
+    <div class="card-b">
+      <div class="chips" id="builChk"></div>
+      <div class="sec-t mt16">添付</div>
+      <div class="row" data-item="012-12"><label class="ck"><input type="checkbox" checked>外観</label><label class="ck"><input type="checkbox" checked>パンフ</label><label class="ck"><input type="checkbox">謄本</label></div>
+    </div>
+  </section>
+</div>
+
+<section class="card mt16">
+  <div class="tabs" role="tablist" aria-label="ビル詳細タブ">
+    <button class="tab" role="tab" id="tb-f" aria-controls="t-f" aria-selected="true" data-item="012-36"><svg class="i" aria-hidden="true"><use href="#i-layers"/></svg>フロア・空室<span class="cnt" id="fCnt"></span></button>
+    <button class="tab" role="tab" id="tb-o" aria-controls="t-o" aria-selected="false" data-item="012-27"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg>連絡先<span class="cnt" id="oCnt"></span></button>
+    <button class="tab" role="tab" id="tb-l" aria-controls="t-l" aria-selected="false" data-item="012-28"><svg class="i" aria-hidden="true"><use href="#i-pin"/></svg>基本・立地</button>
+    <button class="tab" role="tab" id="tb-s" aria-controls="t-s" aria-selected="false" data-item="012-29"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>構造・設備</button>
+    <button class="tab" role="tab" id="tb-c" aria-controls="t-c" aria-selected="false" data-item="012-31"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg>契約</button>
+    <button class="tab" role="tab" id="tb-w" aria-controls="t-w" aria-selected="false" data-item="012-33"><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg>WEB・特徴</button>
+    <button class="tab" role="tab" id="tb-p" aria-controls="t-p" aria-selected="false" data-item="012-34"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg>写真<span class="cnt" data-bind="B.photos"></span></button>
+    <span class="tab was" aria-hidden="true" style="cursor:default;margin-left:auto">現行10タブ → 7タブ</span>
+  </div>
+
+  <!-- フロア・空室（現行では10番目のタブ → 先頭・初期表示へ） -->
+  <div class="panel" role="tabpanel" id="t-f" aria-labelledby="tb-f">
+    <div class="row wrap" style="margin-bottom:12px">
+      <div class="seg" role="radiogroup" aria-label="表示するフロア" data-item="012-121">
+        <label><input type="radio" name="fs">空きのみ</label><label><input type="radio" name="fs" checked>済みを含む</label><label><input type="radio" name="fs">削除のみ</label>
+      </div>
+      <button class="btn" type="button" data-item="012-122"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg>検索</button>
+      <span class="rfi" title="フロア情報の追加要件（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-10</span>
+      <label class="ck ml-auto" data-item="012-123"><input type="checkbox">セットアップコピー</label>
+      <button class="btn btn-p" type="button" data-item="012-124"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>新規フロア作成</button>
+    </div>
+    <div class="tbl-wrap" tabindex="0" aria-label="フロア一覧（横スクロール）">
+      <table class="tbl">
+        <thead><tr>
+          <th data-item="012-139">状況</th><th data-item="012-126">階</th><th data-item="012-127">室名</th><th data-item="012-128">種別</th><th class="r" data-item="012-129">坪数</th>
+          <th class="r" data-item="012-132">賃料</th><th class="r" data-item="012-133">共益費</th><th data-item="012-136">入居日</th><th data-item="012-130">敷金／保証金</th><th data-item="012-131">礼金</th>
+          <th data-item="012-134">更新料</th><th data-item="012-135">償却</th><th data-item="012-138">用途</th><th data-item="012-137">更新</th><th data-item="012-140">フロア番号</th><th class="c" data-item="012-125">操作</th>
+        </tr></thead>
+        <tbody id="floorRows"></tbody>
+      </table>
+    </div>
+    <p class="xs muted" style="margin:8px 0 0">階をクリックするとフロア詳細（別画面）を開きます。削除済みは「削除のみ」で表示し、復元できます。</p>
+  </div>
+
+  <!-- 連絡先 -->
+  <div class="panel" role="tabpanel" id="t-o" aria-labelledby="tb-o" hidden>
+    <div class="row" style="margin-bottom:12px"><span class="small muted">問合せ先に設定した連絡先が、物件一覧とビル概要に表示されます。</span>
+      <button class="btn btn-p ml-auto" type="button" data-item="012-37"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>問合せ先を追加</button></div>
+    <div class="tbl-wrap" tabindex="0" aria-label="連絡先一覧（横スクロール）">
+      <table class="tbl">
+        <thead><tr>
+          <th class="c" data-item="012-39">問合</th><th data-item="012-40">確認日</th><th data-item="012-41">オーナー（名称・コード）</th><th data-item="012-47">分類</th><th data-item="012-44">種別</th>
+          <th data-item="012-42">TEL</th><th data-item="012-48">携帯番号</th><th data-item="012-49">担当者</th><th data-item="012-45">確認者</th><th data-item="012-46">PR</th><th data-item="012-43">オーナー備考</th><th data-item="012-50">ビル備考</th><th class="c" data-item="012-38">操作</th>
+        </tr></thead>
+        <tbody id="ownerRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 基本・立地（現行ヘッダ部の名称・住所 ＋ 立地タブ） -->
+  <div class="panel" role="tabpanel" id="t-l" aria-labelledby="tb-l" hidden>
+    <div class="sec-t">名称</div>
+    <div class="g3">
+      <div class="field" data-item="012-09"><label for="n1">ビル名</label><input class="inp" id="n1" data-bind="B.name"></div>
+      <div class="field" data-item="012-11"><label for="n3">ヨミガナ</label><input class="inp" id="n3" data-bind="B.kana"><span class="help">ビル名検索はヨミガナが確実です</span></div>
+      <div class="field" data-item="012-10"><label for="n2">旧ビル名</label><input class="inp" id="n2" data-bind="B.oldName"></div>
+    </div>
+    <div class="sec-t">所在地</div>
+    <div class="g6">
+      <div class="field" data-item="012-13"><span class="lb">地区番号</span><button class="btn" type="button"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg>地区番号</button></div>
+      <div class="field" data-item="012-14"><label for="a1">地区コード</label><input class="inp num" id="a1" data-bind="B.chikuCode"></div>
+      <div class="field" data-item="012-15"><label for="a2">都道府県</label><select class="inp" id="a2" data-bind="B.pref"></select></div>
+      <div class="field" data-item="012-16"><label for="a3">地区名</label><input class="inp" id="a3" data-bind="B.chikuName" readonly></div>
+      <div class="field" data-item="012-20"><label for="a6">郵便番号</label><div class="row"><input class="inp num" id="a6" data-bind="B.zip"><button class="ib" type="button" aria-label="郵便番号から住所を検索" title="〒検索"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></button></div></div>
+      <div class="field" data-item="012-21"><span class="lb">地図</span><button class="btn" type="button"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg>地図設定</button></div>
+      <div class="field span2" data-item="012-17"><label for="a4">住所</label><input class="inp" id="a4" data-bind="B.address"></div>
+      <div class="field span2" data-item="012-18"><span class="lb">丁目－番地－号</span><div class="row"><input class="inp num" aria-label="丁目" data-bind="B.cyoume">－<input class="inp num" aria-label="番地" data-bind="B.banchi">－<input class="inp num" aria-label="号" data-bind="B.gou"></div></div>
+      <div class="field" data-item="012-19"><span class="lb">&nbsp;</span><label class="ck"><input type="checkbox" data-bind="B.chiban">地番</label></div>
+    </div>
+    <div class="sec-t">立地</div>
+    <div class="g4">
+      <div class="field" data-item="012-51"><label class="ck"><input type="checkbox" data-bind="B.locate.street">大通り沿い</label><input class="inp" aria-label="大通り名1" data-bind="B.locate.street1"></div>
+      <div class="field" data-item="012-52"><label for="s2">大通り名2</label><input class="inp" id="s2" data-bind="B.locate.street2"></div>
+      <div class="field" data-item="012-53"><span class="lb">&nbsp;</span><label class="ck"><input type="checkbox" data-bind="B.locate.corner">角ビル</label></div>
+      <div class="field" data-item="012-54"><span class="lb">&nbsp;</span><label class="ck"><input type="checkbox" data-bind="B.locate.eki">駅直結</label></div>
+    </div>
+    <div class="sec-t">最寄駅</div>
+    <div class="row" style="align-items:flex-start;gap:16px">
+      <div class="tbl-wrap" style="width:520px" data-item="012-55"><table class="tbl"><thead><tr><th>路線</th><th>駅</th><th class="r">徒歩</th><th class="c">操作</th></tr></thead><tbody id="ekiRows"></tbody></table></div>
+      <div class="row"><button class="btn" type="button" data-item="012-56"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>最寄駅の追加</button><button class="btn btn-ghost" type="button" data-item="012-57"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg>クリア</button></div>
+    </div>
+  </div>
+
+  <!-- 構造・設備（2タブを統合） -->
+  <div class="panel" role="tabpanel" id="t-s" aria-labelledby="tb-s" hidden>
+    <nav class="subnav" aria-label="セクション"><a class="chip" href="#sec-kozo">構造</a><a class="chip" href="#sec-rn">リニューアル</a><a class="chip" href="#sec-eq">設備</a></nav>
+    <div class="sec-t" id="sec-kozo">構造</div>
+    <div class="g6">
+      <div class="field" data-item="012-58"><label for="k1">竣工</label><input class="inp num" id="k1" data-bind="B.kozo.completion"></div>
+      <div class="field" data-item="012-64"><label for="k2">構造</label><select class="inp" id="k2" data-bind="B.kozo.architect"></select></div>
+      <div class="field" data-item="012-65"><label for="k3">地上（階）</label><input class="inp num" id="k3" data-bind="B.kozo.ground"></div>
+      <div class="field" data-item="012-66"><label for="k4">地下（階）</label><input class="inp num" id="k4" data-bind="B.kozo.underground"></div>
+      <div class="field" data-item="012-70"><label for="k8">耐震1</label><select class="inp" id="k8" data-bind="B.kozo.taishin1"></select></div>
+      <div class="field" data-item="012-71"><label for="k9">耐震2</label><select class="inp" id="k9" data-bind="B.kozo.taishin2"></select><span class="help">耐震1に応じて候補が変わります</span></div>
+      <div class="field" data-item="012-67"><label for="k5">基準階（坪）</label><input class="inp num" id="k5" data-bind="B.kozo.baseFloor" data-fmt="f2"></div>
+      <div class="field" data-item="012-68"><label for="k6">総面積（坪）</label><input class="inp num" id="k6" data-bind="B.kozo.totalTsubo" data-fmt="f2"></div>
+      <div class="field" data-item="012-69"><label for="k7">延床面積（坪）</label><input class="inp num" id="k7" data-bind="B.kozo.sumTsubo" data-fmt="f2"></div>
+    </div>
+    <div class="sec-t" id="sec-rn">リニューアル</div>
+    <div class="g6">
+      <div class="field" data-item="012-59"><label for="r1">最終ﾘﾆｭｰｱﾙ年</label><input class="inp num" id="r1" data-bind="B.kozo.renewal"></div>
+      <div class="field" data-item="012-60"><label for="r2">外壁</label><input class="inp num" id="r2" data-bind="B.kozo.rnWall"></div>
+      <div class="field" data-item="012-61"><label for="r3">玄関</label><input class="inp num" id="r3" data-bind="B.kozo.rnEntrance"></div>
+      <div class="field" data-item="012-62"><label for="r4">EV</label><input class="inp num" id="r4" data-bind="B.kozo.rnEv"></div>
+      <div class="field span2" data-item="012-63"><label for="r5">ﾘﾆｭｰｱﾙ内容</label><input class="inp" id="r5" data-bind="B.kozo.rnMemo"></div>
+    </div>
+    <div class="sec-t" id="sec-eq" data-item="012-30">設備<span class="was xs muted" style="font-weight:400">（旧 設備タブ）</span></div>
+    <div class="g6">
+      <div class="field" data-item="012-72"><label for="e1">EV 基数</label><select class="inp" id="e1" data-bind="B.spec.ev"></select></div>
+      <div class="field" data-item="012-73"><label for="e2">EV 常用（人乗り）</label><input class="inp num" id="e2" data-bind="B.spec.evPersons"></div>
+      <div class="field span2"><span class="lb">EV オプション</span><div class="chips" id="evOpt"></div></div>
+      <div class="field span2" data-item="012-75"><span class="lb">EV 確認日・確認者</span><div class="row"><input class="inp num" style="width:120px" aria-label="EV確認日" data-bind="B.spec.evDate"><span data-bind="B.spec.evStaff"></span></div></div>
+      <div class="field" data-item="012-76"><label for="p1">駐車場</label><select class="inp" id="p1" data-bind="B.spec.p"></select></div>
+      <div class="field" data-item="012-77"><label for="p2">P 総数（台）</label><input class="inp num" id="p2" data-bind="B.spec.pTotal"></div>
+      <div class="field" data-item="012-78"><label for="p3">P 空き（台）</label><input class="inp num" id="p3" data-bind="B.spec.pAki"></div>
+      <div class="field" data-item="012-79"><label for="p4">P 備考</label><input class="inp" id="p4" data-bind="B.spec.pMemo"></div>
+      <div class="field" data-item="012-81"><span class="lb">P 確認日・確認者</span><div class="row"><input class="inp num" style="width:110px" aria-label="P確認日" data-bind="B.spec.pDate"><span class="small" data-bind="B.spec.pStaff"></span></div></div>
+      <div class="field"><span class="lb">P オプション</span><div class="chips" id="pOpt"></div></div>
+      <div class="field" data-item="012-82"><label for="x1">エントランス</label><select class="inp" id="x1" data-bind="B.spec.entrance"></select><input class="inp" aria-label="エントランス備考" data-bind="B.spec.entranceMemo"></div>
+      <div class="field" data-item="012-83"><label for="x2">セキュリティ</label><select class="inp" id="x2" data-bind="B.spec.security"></select></div>
+      <div class="field" data-item="012-84"><label for="x3">光ファイバー</label><select class="inp" id="x3" data-bind="B.spec.hikari"></select></div>
+      <div class="field" data-item="012-87"><label for="x6">使用時間制限</label><select class="inp" id="x6" data-bind="B.spec.usetime"></select><input class="inp" aria-label="使用時間 備考" data-bind="B.spec.usetimeMemo"></div>
+      <div class="field span2" data-item="012-91"><label for="x10">特殊ニーズ</label><div class="row"><select class="inp" id="x10" style="width:96px" data-bind="B.spec.specialNeeds"></select><input class="inp" aria-label="特殊ニーズ 詳細" data-bind="B.spec.specialNeedsMemo"></div></div>
+      <div class="field" data-item="012-85"><span class="lb">貸会議室</span><select class="inp yn" aria-label="貸会議室" data-yn="kashiKai"></select></div>
+      <div class="field" data-item="012-86"><span class="lb">貸倉庫</span><select class="inp yn" aria-label="貸倉庫" data-yn="kashiSou"></select></div>
+      <div class="field" data-item="012-88"><span class="lb">駐輪スペース</span><select class="inp yn" aria-label="駐輪スペース" data-yn="churin"></select></div>
+      <div class="field" data-item="012-89"><span class="lb">自家発電</span><select class="inp yn" aria-label="自家発電" data-yn="jikaHatuden"></select></div>
+      <div class="field" data-item="012-90"><span class="lb">多機能トイレ</span><select class="inp yn" aria-label="多機能トイレ" data-yn="multiToilet"></select></div>
+    </div>
+  </div>
+
+  <!-- 契約 -->
+  <div class="panel" role="tabpanel" id="t-c" aria-labelledby="tb-c" hidden>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead data-item="012-92"><tr><th style="width:200px">項目名</th><th>状態</th><th>備考</th><th>確認日</th><th>確認者</th></tr></thead>
+        <tbody id="conRows"></tbody>
+      </table>
+    </div>
+    <div class="row mt16" data-item="012-102"><h3>契約履歴</h3><span class="pill" id="conHist"></span><button class="btn btn-sm ml-auto" type="button"><svg class="i i-s" aria-hidden="true"><use href="#i-list"/></svg>契約履歴を表示</button></div>
+  </div>
+
+  <!-- WEB・特徴（公開サイト向けの2タブを統合） -->
+  <div class="panel" role="tabpanel" id="t-w" aria-labelledby="tb-w" hidden>
+    <div class="sec-t">WEB掲載</div>
+    <div class="g2">
+      <div class="field full" data-item="012-107"><label for="w1">キャッチコピー</label><input class="inp" id="w1" data-bind="B.web.catchcopy"></div>
+      <div class="field" data-item="012-108"><label for="w2">ガイド</label><textarea class="inp" id="w2" rows="2" data-bind="B.web.guide"></textarea></div>
+      <div class="field" data-item="012-111"><label for="w4">周辺ガイド</label><textarea class="inp" id="w4" rows="2" data-bind="B.web.wguide2"></textarea></div>
+      <div class="field full" data-item="012-109"><div class="row"><label for="w3" class="lb">Webガイド</label>
+        <button class="btn btn-sm ml-auto" type="button" data-item="012-110"><svg class="i i-s" aria-hidden="true"><use href="#i-sparkles"/></svg>AI生成</button></div>
+        <textarea class="inp" id="w3" rows="3" data-bind="B.web.wguide"></textarea><span class="help">AI生成の結果は担当者が確認してから保存します（現行機能）</span></div>
+    </div>
+    <div class="g6 mt12">
+      <div class="field span2" data-item="012-112"><label for="w5">担当</label><select class="inp" id="w5" data-bind="B.web.staff"></select></div>
+      <div class="field" data-item="012-113"><span class="lb">駅近</span><span class="stars" data-star="star1"></span></div>
+      <div class="field" data-item="012-114"><span class="lb">設備</span><span class="stars" data-star="star2"></span></div>
+      <div class="field" data-item="012-115"><span class="lb">耐震性</span><span class="stars" data-star="star3"></span></div>
+      <div class="field" data-item="012-116"><span class="lb">エントランス</span><span class="stars" data-star="star4"></span></div>
+    </div>
+    <div class="sec-t mt16" data-item="012-32">特徴<span class="xs muted" style="font-weight:400">（旧 特徴タブ）</span></div>
+    <div class="row" style="margin-bottom:10px">
+      <span class="small muted" data-item="012-103">このビルの特徴を選択し、「保存」を押してください。</span>
+      <button class="btn btn-sm ml-auto" type="button" data-item="012-104"><svg class="i i-s" aria-hidden="true"><use href="#i-sliders"/></svg>ビル特徴</button>
+      <button class="btn btn-sm" type="button" data-item="012-105"><svg class="i i-s" aria-hidden="true"><use href="#i-sliders"/></svg>ビル特徴カテゴリー</button>
+    </div>
+    <div class="chips" id="marks"></div>
+    <p class="xs muted">特徴項目・カテゴリはマスタ設定値（モックは仮ラベル）</p>
+  </div>
+
+  <!-- 写真（営業／運営の2タブを統合） -->
+  <div class="panel" role="tabpanel" id="t-p" aria-labelledby="tb-p" hidden>
+    <div class="sec-t">営業用 <span class="rfi" title="写真・図面ビューア強化（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-04</span></div>
+    <div class="gal" data-item="012-117">
+      <div class="thumb"><svg class="i i-l" aria-hidden="true"><use href="#i-image"/></svg>区画1</div><div class="thumb"><svg class="i i-l" aria-hidden="true"><use href="#i-image"/></svg>区画2</div>
+      <div class="thumb"><svg class="i i-l" aria-hidden="true"><use href="#i-image"/></svg>区画3</div><div class="thumb"><svg class="i i-l" aria-hidden="true"><use href="#i-image"/></svg>区画4</div>
+    </div>
+    <div class="sec-t mt16" data-item="012-35">運営用<span class="xs muted" style="font-weight:400">（旧 写真(運営)タブ）</span></div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="seg" role="radiogroup" aria-label="写真の状態" data-item="012-118"><label><input type="radio" name="ps" checked>済み以外</label><label><input type="radio" name="ps">済みを含む</label></div>
+      <label class="ck" data-item="012-119"><input type="checkbox">すべて選択</label>
+    </div>
+    <div class="pgrid" data-item="012-120" id="pgrid"></div>
+  </div>
+</section>
+    </main>
+  </div>
+</div>
+<script>
+document.getElementById('loginName').textContent = UI.M.staff.sakura;
+(function () {
+  var M = UI.M, B = M.findBuilding('010231'), ic = UI.ic, esc = UI.esc, di = UI.di;
+  UI.bind({ B: B });
+  var d = UI.daysSince(B.checkDate);
+  document.getElementById('fresh').innerHTML = ic('clock', 'i-s') + (d === 0 ? '本日確認' : d + '日前に確認');
+  var k = B.kozo;
+  document.getElementById('facts').innerHTML = [
+    ['住所', UI.addr(B)], ['最寄駅', B.stations[0].rosen + ' ' + B.stations[0].eki + ' 徒歩' + B.stations[0].tm + '分'],
+    ['竣工', k.completion + (k.renewal ? '（' + k.renewal + '改修）' : '')], ['規模', k.architect + ' 地上' + k.ground + 'F' + (k.underground ? '／地下' + k.underground + 'F' : '') + '・基準階 ' + k.baseFloor.toFixed(2) + '坪']
+  ].map(function (x) { return '<dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd>'; }).join('');
+  var o = B.owners.filter(function (x) { return x.priority; })[0] || B.owners[0];
+  document.getElementById('inq').innerHTML = '<div><b>' + esc(o.name) + '</b> <span class="small muted">' + o.bunrui + '・' + o.type + '</span></div>' +
+    '<a class="tel num mt8" href="#" onclick="return false">' + ic('phone') + o.tel + '</a><div class="small muted">' + esc(o.comment) + '・定休 ' + o.holiday + '</div>';
+  var counts = [0, 0, 0, 0, 0, 0], mn = 1e9, mx = 0;
+  B.floors.forEach(function (f) { counts[f.aki]++; if (f.aki < 5) { mn = Math.min(mn, f.feePer); mx = Math.max(mx, f.feePer); } });
+  document.getElementById('akisum').innerHTML = counts.map(function (n, i) { return n ? UI.aki(i).replace('</span>', ' ' + n + '</span>') : ''; }).join('');
+  document.getElementById('range').textContent = M.yen(mn) + '〜' + M.yen(mx) + '円';
+  UI.chips(document.getElementById('builChk'), ['図面有', 'パンフ有', '謄本有', '外観有', '詳細写真有', 'チェック6', 'チェック7', 'チェック8', 'チェック9', 'チェック10', 'チェック11', 'チェック12', 'チェック13'], B.checks, '012-22');
+  UI.chips(document.getElementById('evOpt'), ['荷物用', '非常用', '寝台用'], [], '012-74');
+  UI.chips(document.getElementById('pOpt'), ['平置き', '機械式', '時間貸'], [B.spec.pOpt], '012-80');
+  UI.chips(document.getElementById('marks'), ['新耐震', 'オートロック', '天井高2.6m以上', '駅徒歩5分以内', '角部屋', 'リニューアル済', 'OAフロア', '個別空調'], ['新耐震', 'オートロック', '駅徒歩5分以内'], '012-106');
+  document.querySelectorAll('select.yn').forEach(function (s) { s.innerHTML = '<option>' + (B.spec[s.getAttribute('data-yn')] ? '有' : '無') + '</option>'; });
+  document.querySelectorAll('[data-star]').forEach(function (el) { var n = B.web[el.getAttribute('data-star')]; var h = ''; for (var i = 0; i < 5; i++) h += '<svg class="i' + (i < n ? ' on' : '') + '" aria-hidden="true"><use href="#i-star"/></svg>'; el.innerHTML = h; el.setAttribute('role', 'img'); el.setAttribute('aria-label', '5段階中' + n); });
+
+  var dash = '<span class="muted">-</span>';
+  document.getElementById('fCnt').textContent = B.floors.length;
+  document.getElementById('floorRows').innerHTML = B.floors.map(function (f) {
+    var yoto = ['事', '店', '倉', 'マ'].map(function (y) { return '<span class="yo' + (f.yoto.indexOf(y) >= 0 ? ' on' : '') + '">' + y + '</span>'; }).join('');
+    return '<tr' + (f.aki === 5 ? ' class="done"' : '') + '><td>' + UI.aki(f.aki) + '</td><td class="nw"><a href="#" onclick="return false" title="フロア詳細（別画面）"><b>' + f.kai + '</b> ' + ic('pencil', 'i-s') + '</a>' + (f.memo ? '<span class="sub-l" style="color:#9A3412">' + esc(f.memo) + '</span>' : '') + '</td>' +
+      '<td>' + (f.name || dash) + '</td><td class="nw">' + f.type + '</td><td class="r nw num"><b>' + f.tsubo.toFixed(2) + '</b>坪 ' + f.gn + '<span class="sub-l">' + f.metor.toFixed(2) + '㎡</span></td>' +
+      '<td class="r nw num"><span class="price">' + M.yen(f.feeTotal) + '</span><span class="sub-l">@' + M.yen(f.feePer) + '</span></td><td class="r nw num">' + M.yen(f.pubTotal) + '<span class="sub-l">@' + M.yen(f.pubPer) + '</span></td>' +
+      '<td class="nw"><b>' + f.nyukyo + '</b></td><td>' + f.hosho + '</td><td>' + f.reikin + '</td><td>' + f.koshin + '</td><td>' + f.shokyaku + '</td><td class="nw">' + yoto + '</td>' +
+      '<td class="nw">' + esc(f.staff) + '<span class="sub-l num">' + f.akiDate + '</span></td><td class="num muted nw">' + f.no + '</td>' +
+      '<td class="c nw"><button class="ib ib-sm" type="button" title="コピー" aria-label="' + f.kai + ' をコピー">' + ic('copy') + '</button><button class="ib ib-sm dg" type="button" title="削除" aria-label="' + f.kai + ' を削除">' + ic('trash') + '</button></td></tr>';
+  }).join('');
+
+  document.getElementById('oCnt').textContent = B.owners.length;
+  document.getElementById('ownerRows').innerHTML = B.owners.map(function (o) {
+    var mob = (o.biko.match(/090-[0-9-]+/) || [''])[0], tan = (o.biko.match(/担:([^)]+)/) || ['', ''])[1];
+    return '<tr><td class="c"><input type="radio" name="inq" aria-label="問合せ先に設定"' + (o.priority ? ' checked' : '') + '>' + (o.priority ? ' <span class="pill blue">問</span>' : '') + '</td><td class="num nw">' + o.checkDate + '</td>' +
+      '<td><b>' + esc(o.name) + '</b><span class="sub-l">' + (o.code || '-') + '</span></td><td class="nw">' + o.bunrui + '</td><td class="nw">' + o.type + '</td>' +
+      '<td class="num nw">' + o.tel + '</td><td class="num nw">' + (mob || dash) + '</td><td class="nw">' + (esc(tan) || dash) + '</td><td class="nw">' + esc(o.staff) + '</td><td>' + (o.pr || dash) + '</td><td>' + (esc(o.comment) || dash) + '</td><td>' + dash + '</td>' +
+      '<td class="c nw"><button class="ib ib-sm" type="button" title="並べ替え" aria-label="並べ替え">' + ic('grip') + '</button><button class="ib ib-sm" type="button" title="編集" aria-label="編集">' + ic('pencil') + '</button><button class="ib ib-sm dg" type="button" title="削除" aria-label="削除">' + ic('trash') + '</button></td></tr>';
+  }).join('');
+
+  document.getElementById('ekiRows').innerHTML = B.stations.map(function (e) {
+    return '<tr><td>' + esc(e.rosen) + '</td><td>' + esc(e.eki) + '</td><td class="r num">' + e.tm + '分</td><td class="c"><button class="ib ib-sm" type="button" aria-label="編集" title="編集">' + ic('pencil') + '</button></td></tr>';
+  }).join('');
+
+  var c = B.contract;
+  function seg(name, opts, val) { return '<div class="seg" role="radiogroup" aria-label="' + name + '">' + opts.map(function (x) { return '<label><input type="radio" name="' + name + '"' + (x === val ? ' checked' : '') + '>' + x + '</label>'; }).join('') + '</div>'; }
+  var rows = [
+    ['012-93', '契約種別', seg('契約種別', ['普通借', '定借'], c.teiki), c.teikiMemo, c.teikiDate, c.teikiStaff],
+    ['012-94', '建替予定', seg('建替予定', ['有', '無'], c.tatekae), '', '', ''],
+    ['012-95', '短期貸し', seg('短期貸し', ['可', '不可'], c.tanki), '', '', ''],
+    ['012-96', '保証契約', seg('保証契約', ['有', '無'], c.hosho), c.hoshoMemo, '', ''],
+    ['012-97', '原状回復', seg('原状回復', ['有', '無'], c.genjo), c.genjoMemo, '', '', '<span class="sub-l" data-item="012-98">※床・壁・天井なし、造作撤去</span>'],
+    ['012-99', 'アスベスト診断書', seg('アスベスト', ['有', '無'], c.asbestos), '', '', ''],
+    ['012-100', '建築完了検査の検査済証', seg('検査済証', ['有', '無'], c.completeDoc), '', '', ''],
+    ['012-101', '耐震診断書', seg('耐震診断書', ['有', '無'], c.taishinDoc), '', '', '']
+  ];
+  document.getElementById('conRows').innerHTML = rows.map(function (r) {
+    return '<tr data-item="' + r[0] + '"><td><b>' + r[1] + '</b>' + (r[6] || '') + '</td><td>' + r[2] + '</td><td><input class="inp" aria-label="' + r[1] + ' 備考" value="' + esc(r[3]) + '"></td><td class="num nw">' + (r[4] || dash) + '</td><td class="nw">' + (esc(r[5]) || dash) + '</td></tr>';
+  }).join('');
+  document.getElementById('conHist').textContent = c.history + '件';
+
+  var ph = ''; for (var i = 0; i < 8; i++) ph += '<label><div class="thumb">' + ic('image') + '</div><input type="checkbox" aria-label="写真' + (i + 1) + 'を選択"></label>';
+  document.getElementById('pgrid').innerHTML = ph;
+})();
+</script>
+</body>
+</html>

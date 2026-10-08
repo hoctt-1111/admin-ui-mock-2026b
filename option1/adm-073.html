@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-073 顧客設定｜Option 1 現行UI踏襲（提案用イメージ）</title>
+<style>
+/* ===== Option 1 共通ベース（現行 common.css / jquery-ui.css の値を参照。font のみ読みやすいシステムフォントへ変更） ===== */
+:root { --th:#6699cc; --thb:#336699; --menu:#f2f2ee; --txt:#333; --tab:#f6f6f6; --tabb:#c5c5c5; --taba:#007fff; --taba-b:#003eff; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #e9e9e9; color: var(--txt); font: 13px/1.5 -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
+.canvas { width: 1440px; min-height: 100vh; margin: 0 auto; background: #fff; }
+.proposal-bar { display: flex; align-items: center; gap: 14px; height: 34px; padding: 0 14px; background: #fff8d6; border-bottom: 1px solid #e0c96b; font-size: 12px; }
+.proposal-bar .stamp { padding: 1px 8px; border: 1px solid #8a5a00; color: #8a5a00; font-weight: bold; }
+.proposal-bar a { color: #336699; }
+.proposal-bar a.cur { color: #000; font-weight: bold; text-decoration: none; }
+.proposal-bar .sp { margin-left: auto; color: #8a5a00; }
+table { border-collapse: collapse; }
+table.edit { table-layout: fixed; }
+table.edit th, table.list th { padding: 2px 4px; background: var(--th); border: 1px solid var(--thb); color: #fff; font-weight: normal; }
+table.edit td { padding: 2px 4px; background: #fff; vertical-align: middle; }
+table.list { width: 100%; table-layout: fixed; }
+table.list td { padding: 2px 4px; border: 1px solid #ddd; }
+.c { text-align: center; } .r { text-align: right; } .l { text-align: left; } .t { vertical-align: top !important; }
+input.f, select.f, textarea.f { height: 22px; padding: 1px 3px; border: 1px solid #999; background: #fff; font: inherit; color: var(--txt); }
+textarea.f { height: auto; width: 100%; resize: none; }
+button { height: 22px; padding: 0 6px; background: #eee; border: 1px solid #000; font: inherit; line-height: 18px; cursor: pointer; white-space: nowrap; }
+button .g, .ib { display: inline-block; width: 14px; height: 14px; margin-right: 3px; border: 1px solid #777; border-radius: 2px; background: #fff; font-size: 10px; line-height: 12px; text-align: center; vertical-align: -2px; color: #333; }
+.ib { margin: 0; cursor: pointer; }
+.ib.add { color: #2a8a2a; } .ib.del { color: #b00; } .ib.edit { color: #336699; } .ib.save { color: #336699; }
+ul.chk { display: flex; flex-wrap: wrap; gap: 0; margin: 0; padding: 0; list-style: none; }
+ul.chk li { margin: 0 -1px -1px 0; padding: 2px 6px; border: 1px solid #000; background: #fff; line-height: 1.2; cursor: pointer; }
+ul.chk li.on { background: #1c75ba; color: #fff; }
+.undef { color: #999; }
+/* jQuery UI tabs 相当 */
+.tabs { margin-top: 6px; border: 1px solid #ddd; }
+.tabs > ul.nav { display: flex; gap: 2px; margin: 0; padding: 3px 3px 0; background: #e9e9e9; border-bottom: 1px solid #ddd; list-style: none; }
+.tabs > ul.nav li { padding: 3px 10px; background: var(--tab); border: 1px solid var(--tabb); border-bottom: 0; border-radius: 3px 3px 0 0; color: #454545; cursor: pointer; }
+.tabs > ul.nav li.on { background: var(--taba); border-color: var(--taba-b); color: #fff; }
+.tabs > .panel { display: none; padding: 6px; }
+.tabs > .panel.on { display: block; }
+/* jQuery UI dialog 相当 */
+.backdrop { padding: 30px 0 40px; background: #9a9a9a; }
+.dialog { margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.dialog .titlebar { display: flex; justify-content: space-between; padding: 3px 10px; background: #ddd; font-weight: bold; }
+.dialog .body { padding: 6px; }
+.dialog .buttonpane { display: flex; gap: 5px; padding: 6px 10px; border-top: 1px solid #ddd; }
+.dialog .buttonpane .right { margin-left: auto; display: flex; gap: 5px; }
+.note-inline { color: #888; font-size: 11px; }
+/* ===== 画面固有（customer.css 参照） ===== */
+#header table.edit { width: 100%; margin-bottom: 2px; }
+#header .inner td { padding: 0 2px; }
+.title-cell { color: #369; font-weight: bold; }
+table.needs td.line { border-bottom: 1px solid #ccc; }
+table.needs td { vertical-align: top; }
+</style>
+<script src="../shared/mock-data.js"></script>
+</head>
+<body>
+<div class="canvas">
+
+<div class="proposal-bar">
+  <span class="stamp">提案用イメージ</span>
+  <span>Option 1 現行UI踏襲</span>
+  <span>業務フロー:</span>
+  <a class="cur" href="adm-073.html">1 顧客設定</a> →
+  <a href="adm-030.html">2 物件一覧</a> →
+  <a href="adm-012.html">3 ビル詳細</a> →
+  <a href="adm-096.html">4 レポート ビル設定</a> →
+  <a href="adm-086.html">5 レポートリスト</a>
+  <span class="sp">データはすべて架空です</span>
+</div>
+
+<!-- 現行: 顧客一覧（/customer/）上に jQuery UI ダイアログで開く -->
+<div class="backdrop">
+<div class="dialog" style="width:1020px">
+  <div class="titlebar" data-item="073-01"><span>[<span data-v="no"></span>] 顧客詳細</span><span>×</span></div>
+  <div class="body">
+  <div id="header">
+    <table class="edit">
+      <colgroup><col width="65"><col width="25"><col><col width="60"><col width="110"><col width="60"><col width="120"><col width="60"><col width="125"><col width="90"></colgroup>
+      <tr>
+        <th rowspan="2" data-item="073-05">企業名</th>
+        <td class="c"><span class="ib" data-item="073-06" title="企業検索">検</span></td>
+        <td colspan="2"><input class="f" style="width:330px" data-v="comName"></td>
+        <td class="l"><label data-item="073-07"><input type="checkbox" data-c="otherEnd"> エンド別</label></td>
+        <th data-item="073-08">ランク</th>
+        <td><select class="f" style="width:100%"><option data-v="rank"></option></select></td>
+        <th data-item="073-09">初回登録</th>
+        <td data-v="regist"></td>
+        <td data-v="register"></td>
+      </tr>
+      <tr>
+        <td class="c" data-item="073-10">ｶﾅ</td>
+        <td colspan="2"><input class="f" style="width:330px" data-v="comKana"></td>
+        <td class="l"><label data-item="073-11"><input type="checkbox" data-c="isNew"> 新しい企業</label></td>
+        <th data-item="073-12">進捗</th>
+        <td><select class="f" style="width:100%"><option data-v="status"></option></select></td>
+        <th data-item="073-13">最終更新</th>
+        <td data-v="update"></td>
+        <td data-v="updater"></td>
+      </tr>
+      <tr>
+        <th data-item="073-14">支店名</th>
+        <td></td>
+        <td><input class="f" style="width:270px" data-v="name"></td>
+        <th data-item="073-15">代表TEL</th>
+        <td><input class="f" style="width:100%" data-v="tel"></td>
+        <th data-item="073-16">営業担当</th>
+        <td><select class="f" style="width:100%"><option data-v="staff1"></option></select></td>
+        <th data-item="073-17">荷電</th>
+        <td colspan="2"><select class="f" style="width:100%"><option data-v="telResult"></option></select></td>
+      </tr>
+      <tr>
+        <th data-item="073-18">URL</th>
+        <td></td>
+        <td><input class="f" style="width:270px" data-v="url"></td>
+        <th data-item="073-19">代表FAX</th>
+        <td><input class="f" style="width:100%" data-v="fax"></td>
+        <th data-item="073-20">発掘担当</th>
+        <td><select class="f" style="width:100%"><option data-v="getter"></option></select></td>
+        <th data-item="073-21">見込</th>
+        <td colspan="2"><input class="f r" style="width:60px" data-v="price"> 万</td>
+      </tr>
+      <tr>
+        <th rowspan="2">担当・冊子<br>住所</th>
+        <td class="c"><span class="ib" title="郵便番号検索">〒</span></td>
+        <td colspan="5">
+          <table class="inner"><tr>
+            <td data-item="073-22"><input class="f" style="width:80px" data-v="zip"></td>
+            <td data-item="073-23"><select class="f"><option data-v="pref"></option></select></td>
+            <td data-item="073-24"><input class="f" style="width:200px" data-v="addr"></td>
+            <td data-item="073-25"><input class="f" style="width:36px" data-v="cyoume"> - <input class="f" style="width:36px" data-v="banchi"> - <input class="f" style="width:36px" data-v="gou"></td>
+          </tr></table>
+        </td>
+        <th data-item="073-26">A見込</th>
+        <td colspan="2"><select class="f"><option data-v="pmarkA"></option></select> <input class="f r" style="width:56px" data-v="priceA"> 万</td>
+      </tr>
+      <tr>
+        <td class="c">ﾋﾞﾙ</td>
+        <td colspan="5" data-item="073-27"><input class="f" style="width:300px" data-v="builName"> <input class="f" style="width:36px" data-v="kai"> 階 <input class="f" style="width:150px" data-v="bukkenName"></td>
+        <th data-item="073-28">B見込</th>
+        <td colspan="2"><select class="f"><option data-v="pmarkB"></option></select> <input class="f r" style="width:56px" data-v="priceB"> 万</td>
+      </tr>
+    </table>
+    <!-- 汎用チェック（ラベルはマスタ設定値。モックでは仮ラベル） -->
+    <ul class="chk" id="custChecks" data-item="073-29"></ul>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <ul class="nav">
+      <li class="on" data-tab="p-progress" data-item="073-30">履歴</li>
+      <li data-tab="p-candidate" data-item="073-31">案内物件</li>
+      <li data-tab="p-needs" data-item="073-32">ニーズ</li>
+      <li data-tab="p-company" data-item="073-33">企業</li>
+      <li data-tab="p-contact" data-item="073-34">担当</li>
+    </ul>
+
+    <!-- 履歴 -->
+    <div class="panel on" id="p-progress">
+      <table class="edit">
+        <colgroup><col width="50"><col width="110"><col width="260"><col width="50"><col width="110"><col width="260"></colgroup>
+        <tr>
+          <th data-item="073-35">具体策1</th><td><input class="f" style="width:100%" data-v="todo1Limit"></td><td><input class="f" style="width:100%" data-v="todo1"></td>
+          <th data-item="073-36">具体策2</th><td><input class="f" style="width:100%" data-v="todo2Limit"></td><td><input class="f" style="width:100%" data-v="todo2"></td>
+        </tr>
+      </table>
+      <table class="list" style="margin-top:4px">
+        <colgroup><col width="120"><col width="100"><col width="100"><col width="100"><col><col width="22"><col width="22"><col width="22"></colgroup>
+        <thead><tr>
+          <th data-item="073-37">実施日</th><th data-item="073-38">担当</th><th data-item="073-39">結果</th><th data-item="073-40">連絡方法</th>
+          <th class="l" colspan="4"><span data-item="073-41">詳細内容</span> <button data-item="073-42"><span class="g add">+</span>履歴の追加</button></th>
+        </tr></thead>
+        <tbody id="progressRows"></tbody>
+      </table>
+      <p class="note-inline" data-item="073-44">※編集中の行は［保存］［取消］アイコンに切り替わります。</p>
+      <p class="note-inline" data-item="073-45">※履歴が0件の場合「この案件に進捗は登録されていません。」と表示。</p>
+      <p class="note-inline" data-item="073-46">※閲覧権限がない顧客は「この顧客の行動履歴は閲覧権限がないため見られません。」と表示。</p>
+    </div>
+
+    <!-- 案内物件 -->
+    <div class="panel" id="p-candidate">
+      <table class="list">
+        <colgroup><col width="200"><col width="50"><col width="50"><col width="60"><col width="60"><col width="90"><col width="40"><col width="40"><col width="90"><col width="50"><col><col width="22"><col width="22"><col width="22"></colgroup>
+        <thead><tr>
+          <th class="l" data-item="073-47">物件</th><th data-item="073-48">階</th><th data-item="073-49">号室</th><th data-item="073-50">坪数</th><th data-item="073-51">種別</th>
+          <th data-item="073-52">案内日</th><th data-item="073-53">候補</th><th data-item="073-54">一番</th><th data-item="073-55">候補日</th><th data-item="073-56">重要度</th>
+          <th class="l" colspan="4"><span data-item="073-57">備考</span> <button data-item="073-58"><span class="g add">+</span>物件の追加</button></th>
+        </tr></thead>
+        <tbody id="candidateRows"></tbody>
+      </table>
+      <p class="note-inline">※行末アイコン：編集・削除（編集中は保存・取消）。</p>
+    </div>
+
+    <!-- ニーズ -->
+    <div class="panel" id="p-needs">
+      <table class="edit">
+        <colgroup><col width="110"></colgroup>
+        <tr>
+          <th data-item="073-60">　集客日　</th><th data-item="073-61">　入手経路　</th><th data-item="073-62">　入手経路２　</th><th data-item="073-63">　地域　</th>
+          <th data-item="073-64">　エリア　</th><th data-item="073-65">　入手面積　</th><th data-item="073-66">　他社依頼　</th><th data-item="073-67">　内装業者紹介　</th>
+          <td class="r" data-item="073-68">最後にニーズを修正した日</td>
+        </tr>
+        <tr>
+          <td class="c"><input class="f" style="width:96px" data-v="needs.collect"></td>
+          <td class="c"><select class="f"><option data-v="needs.entry"></option></select></td>
+          <td class="c"><select class="f"><option data-v="needs.entry2"></option></select></td>
+          <td class="c"><select class="f"><option data-v="needs.area"></option></select></td>
+          <td class="c"><select class="f"><option data-v="needs.area2"></option></select></td>
+          <td class="c"><select class="f"><option data-v="needs.space"></option></select></td>
+          <td class="c"><select class="f"><option data-v="needs.other"></option></select></td>
+          <td class="c"><select class="f"><option data-v="needs.inner"></option></select></td>
+          <td class="r" data-v="needs.lastUpdate"></td>
+        </tr>
+      </table>
+      <br>
+      <table class="edit" style="width:100%">
+        <colgroup><col width="150"><col></colgroup>
+        <tr><th data-item="073-69">用途</th><td><ul class="chk" id="usageChk"></ul></td></tr>
+        <tr><th data-item="073-70">問合せ物件</th><td><textarea class="f" rows="1" data-v="needs.bukken"></textarea></td></tr>
+        <tr><th data-item="073-71">問合せ物件を選んだ理由</th><td><textarea class="f" rows="1" data-v="needs.choice"></textarea></td></tr>
+        <tr><th data-item="073-72">移転理由</th><td><ul class="chk" id="reasonChk"></ul></td></tr>
+        <tr><th data-item="073-73">移転の目的や改善したいこと</th><td><textarea class="f" rows="2" data-v="needs.purpose"></textarea></td></tr>
+      </table>
+      <br>
+      <table class="edit needs" style="width:100%">
+        <colgroup><col width="44"><col width="60"><col width="70"><col width="290"><col width="60"><col></colgroup>
+        <tr data-item="073-74"><th>優先</th><th>項目</th><th colspan="2">現在</th><th colspan="2">要望</th></tr>
+        <tr>
+          <td class="c line" rowspan="2" data-item="073-75"><select class="f"><option data-v="needs.areaSeq"></option></select></td>
+          <td class="c line" rowspan="2">エリア</td>
+          <td class="line" rowspan="2" colspan="2" data-item="073-76"><div class="note-inline">（入居中ビル一覧）</div><input class="f" style="width:100%" data-v="needs.areaBuil"></td>
+          <td>エリア</td><td data-item="073-77"><input class="f" style="width:100%" data-v="needs.areaReq"></td>
+        </tr>
+        <tr><td class="line">理由</td><td class="line" data-item="073-78"><input class="f" style="width:100%" data-v="needs.areaMemo"></td></tr>
+        <tr>
+          <td class="c line" rowspan="3" data-item="073-79"><select class="f"><option data-v="needs.spaceSeq"></option></select></td>
+          <td class="c line" rowspan="3">大きさ</td>
+          <td>坪</td><td data-item="073-80"><input class="f r" style="width:60px" data-v="needs.curSpace"> 坪／<label><input type="radio" checked> グロス</label> <label><input type="radio"> ネット</label></td>
+          <td>坪</td><td data-item="073-81"><input class="f r" style="width:60px" data-v="needs.reqSpace1"> 坪 ～ <input class="f r" style="width:60px" data-v="needs.reqSpace2"> 坪</td>
+        </tr>
+        <tr>
+          <td>使用人数</td><td data-item="073-82"><input class="f r" style="width:50px" data-v="needs.curNum"> 人 （1人あたり <input class="f r" style="width:50px" data-v="needs.curSpacePer"> 坪）</td>
+          <td>使用人数</td><td data-item="073-83"><input class="f r" style="width:50px" data-v="needs.reqNum"> 人 （1人あたり <input class="f r" style="width:50px" data-v="needs.reqSpacePer"> 坪）</td>
+        </tr>
+        <tr><td class="line"></td><td class="line"></td><td class="line">理由</td><td class="line" data-item="073-84"><input class="f" style="width:100%" data-v="needs.spaceMemo"></td></tr>
+        <tr>
+          <td class="c line" rowspan="3" data-item="073-85"><select class="f"><option data-v="needs.feeSeq"></option></select></td>
+          <td class="c line" rowspan="3">予算</td>
+          <td>総額</td><td data-item="073-86"><input class="f r" style="width:110px" data-v="needs.curFee" data-yen> 円</td>
+          <td>総額</td><td data-item="073-87"><input class="f r" style="width:110px" data-v="needs.reqFee" data-yen> 円</td>
+        </tr>
+        <tr>
+          <td>坪単価</td><td data-item="073-88"><input class="f r" style="width:90px" data-v="needs.curFeePer" data-yen> 円 / 坪</td>
+          <td>坪単価</td><td data-item="073-89"><input class="f r" style="width:90px" data-v="needs.reqFeePer" data-yen> 円 / 坪</td>
+        </tr>
+        <tr><td class="line"></td><td class="line"></td><td class="line">理由</td><td class="line" data-item="073-90"><input class="f" style="width:100%" data-v="needs.feeMemo"></td></tr>
+        <tr>
+          <td class="c line" rowspan="2" data-item="073-91"><select class="f"><option data-v="needs.timingSeq"></option></select></td>
+          <td class="c line" rowspan="2">時期</td>
+          <td>解約予告</td><td data-item="073-92"><label><input type="checkbox"> 解約予告済み</label>（<input class="f" style="width:80px" data-v="needs.cancel"> 月迄）</td>
+          <td>時期</td><td data-item="073-94"><input class="f" style="width:100%" data-v="needs.reqTiming"></td>
+        </tr>
+        <tr>
+          <td class="line">予告期間</td><td class="line" data-item="073-93"><input class="f r" style="width:40px" data-v="needs.cancelM">ヶ月</td>
+          <td class="line">理由</td><td class="line" data-item="073-95"><input class="f" style="width:100%" data-v="needs.timingMemo"></td>
+        </tr>
+        <tr>
+          <td class="c" data-item="073-96"><select class="f"><option data-v="needs.specSeq"></option></select></td>
+          <td class="c">設備</td>
+          <td>問題点</td>
+          <td class="line" rowspan="2" data-item="073-97"><textarea class="f" rows="3" data-v="needs.curSpec"></textarea></td>
+          <td colspan="2" data-item="073-98"><ul class="chk" id="reqSpecChk"></ul></td>
+        </tr>
+        <tr><td class="line"></td><td class="line"></td><td class="line"></td><td class="line">理由</td><td class="line" data-item="073-99"><input class="f" style="width:100%" data-v="needs.specMemo"></td></tr>
+        <tr><td class="line" colspan="2">その他要望</td><td class="line" colspan="4" data-item="073-100"><textarea class="f" rows="2" data-v="needs.request"></textarea></td></tr>
+        <tr><td class="line" colspan="2">物件決定<br>までの流れ</td><td class="line" colspan="4" data-item="073-101"><textarea class="f" rows="2" data-v="needs.flow"></textarea></td></tr>
+      </table>
+    </div>
+
+    <!-- 企業 -->
+    <div class="panel" id="p-company">
+      <table class="edit">
+        <colgroup><col width="50"><col width="330"><col width="70"><col width="150"><col width="70"><col width="130"><col width="50"><col width="120"></colgroup>
+        <tr data-item="073-102"><td colspan="2" class="title-cell">業種</td><td colspan="2" class="title-cell">会社規模</td><td colspan="2" class="title-cell">冊子</td><td colspan="2" class="title-cell">その他</td></tr>
+        <tr><th data-item="073-103">業種1</th><td><select class="f" style="width:100%"><option data-v="company.biz1"></option></select></td><th data-item="073-110">設立</th><td><input class="f" style="width:90px" data-v="company.start"></td><th data-item="073-119">冊子状態</th><td><select class="f"><option data-v="company.pamph"></option></select></td><th data-item="073-125">情報元</th><td><select class="f"><option data-v="company.src"></option></select></td></tr>
+        <tr><th data-item="073-104">業種2</th><td><select class="f" style="width:100%"><option data-v="company.biz2"></option></select></td><th data-item="073-111">資本金</th><td><input class="f r" style="width:90px" data-v="company.capital" data-yen> 万</td><th data-item="073-120">郵送NG日</th><td><input class="f" style="width:96px" data-v="company.pamphNG"></td></tr>
+        <tr><th data-item="073-105">業種3</th><td><select class="f" style="width:100%"><option data-v="company.biz3"></option></select></td><th data-item="073-112">従業員数</th><td><input class="f r" style="width:60px" data-v="company.staffs"> 人</td><th data-item="073-121">郵送OK日</th><td><input class="f" style="width:96px" data-v="company.pamphOK"></td></tr>
+        <tr><th data-item="073-106">他業種</th><td><input class="f" style="width:100%" data-v="company.bizName"></td><th data-item="073-113">上場</th><td><select class="f"><option data-v="company.ipo"></option></select></td><th data-item="073-122">初回郵送日</th><td><input class="f" style="width:96px" data-v="company.pamph1st"></td></tr>
+        <tr><td class="title-cell" colspan="2">代表</td><th data-item="073-114">TSR</th><td><input class="f" style="width:96px" data-v="company.tsr"></td><th data-item="073-123">最新郵送日</th><td><input class="f" style="width:96px" data-v="company.pamphLast"></td></tr>
+        <tr><th data-item="073-107">役職</th><td><input class="f" style="width:100%" data-v="company.bossPosi"></td><th data-item="073-115">TDB</th><td><input class="f" style="width:96px" data-v="company.tdb"></td><th data-item="073-124">最新送付号</th><td><input class="f" style="width:50px" data-v="company.pamphVer"></td></tr>
+        <tr><th data-item="073-108">氏名</th><td><input class="f" style="width:100%" data-v="company.bossName"></td><th data-item="073-116">評点</th><td><input class="f" style="width:60px" data-v="company.tdbRank"></td><td class="title-cell">他商材</td></tr>
+        <tr><th data-item="073-109">カナ</th><td><input class="f" style="width:100%" data-v="company.bossKana"></td><th data-item="073-117">評点確認日</th><td><input class="f" style="width:96px" data-v="company.tdbDate"></td><th data-item="073-126">備蓄ｺﾝﾋﾞﾆ</th><td><input class="f" style="width:96px" data-v="company.product1"></td></tr>
+        <tr><td></td><td></td><th data-item="073-118">契約訪問日</th><td><input class="f" style="width:96px" data-v="company.visitDate"></td><th data-item="073-127">ﾌﾟﾘﾝﾄﾓﾝｽﾀｰ</th><td><input class="f" style="width:96px" data-v="company.product2"></td></tr>
+      </table>
+      <br>
+      <table class="edit" style="width:100%">
+        <colgroup><col width="40"><col></colgroup>
+        <tr><td class="title-cell" data-item="073-128">拠点</td><td><ul class="chk" id="domainChk"></ul></td></tr>
+        <tr><td></td><td data-item="073-129"><textarea class="f" rows="2" data-v="company.domainMemo"></textarea></td></tr>
+      </table>
+    </div>
+
+    <!-- 担当 -->
+    <div class="panel" id="p-contact">
+      <table class="list">
+        <colgroup><col width="40"><col width="40"><col width="40"><col width="60"><col width="150"><col width="180"><col width="110"><col><col width="22"><col width="22"><col width="22"></colgroup>
+        <thead><tr>
+          <th data-item="073-130">冊子</th><th data-item="073-131">年賀</th><th data-item="073-132">並び</th>
+          <th class="l" colspan="2" data-item="073-133">部署／役職</th><th class="l" data-item="073-134">担当氏名／カナ</th><th data-item="073-135">直通TEL</th>
+          <th class="l" colspan="4"><span data-item="073-136">Email</span> <button data-item="073-137"><span class="g add">+</span>担当の追加</button></th>
+        </tr></thead>
+        <tbody id="contactRows"></tbody>
+      </table>
+      <p class="note-inline">※編集中の行は［保存］［取消］アイコンに切り替わります。</p>
+    </div>
+  </div><!-- /tabs -->
+  </div><!-- /body -->
+  <div class="buttonpane">
+    <button data-item="073-02"><span class="g del">×</span>削除</button>
+    <div class="right">
+      <button data-item="073-03"><span class="g">⧉</span>コピー</button>
+      <button data-item="073-04"><span class="g save">✓</span>保存</button>
+    </div>
+  </div>
+</div><!-- /dialog -->
+<p style="width:1020px;margin:8px auto 0;color:#fff;font-size:12px">
+  次の操作 → 顧客のニーズで物件を検索：<a style="color:#fff" href="adm-030.html">グローバルメニュー「物件」（物件一覧）へ</a>
+</p>
+</div><!-- /backdrop -->
+</div><!-- /canvas -->
+
+<script>
+(function () {
+  var M = window.MOCK, C = M.customer;
+  function get(path) { return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, C); }
+  document.querySelectorAll('[data-v]').forEach(function (el) {
+    var v = get(el.getAttribute('data-v'));
+    if (v == null) v = '';
+    if (el.hasAttribute('data-yen') && v !== '') v = M.yen(v);
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v; else el.textContent = v;
+  });
+  document.querySelectorAll('[data-c]').forEach(function (el) { el.checked = !!C[el.getAttribute('data-c')]; });
+  function chips(id, all, on) {
+    document.getElementById(id).innerHTML = all.map(function (l) { return '<li' + (on.indexOf(l) >= 0 ? ' class="on"' : '') + '>' + l + '</li>'; }).join('');
+  }
+  chips('custChecks', ['電話済', 'ニーズ確認済', '冊子送付', 'メルマガ', 'DM不可', 'チェック6', 'チェック7', 'チェック8', 'チェック9', 'チェック10', 'チェック11', 'チェック12'], C.checks);
+  chips('usageChk', ['事務所', '店舗', '倉庫', 'その他'], C.needs.usage);
+  chips('reasonChk', ['増床', '減床', '立地改善', '設備改善', 'コスト削減', '統合', 'その他'], C.needs.reason);
+  chips('reqSpecChk', ['個別空調', 'OAフロア', '24H使用可', '駐車場', 'セキュリティ', '男女別トイレ', '天井高'], C.needs.reqSpec);
+  chips('domainChk', ['東京', '大阪', '名古屋', '福岡', 'その他'], C.company.domains);
+
+  var ic = '<span class="ib edit" title="編集">✎</span>', dl = '<span class="ib del" title="削除">×</span>';
+  document.getElementById('progressRows').innerHTML = C.progress.map(function (p, i) {
+    return '<tr' + (i === 0 ? ' data-item="073-43"' : '') + '><td class="c">' + p.date + '</td><td class="c">' + p.staff + '</td><td class="c">' + p.action + '</td><td class="c">' + p.contact +
+      '</td><td>' + p.result + '</td><td class="c">' + ic + '</td><td></td><td class="c">' + dl + '</td></tr>';
+  }).join('');
+  document.getElementById('candidateRows').innerHTML = C.candidates.map(function (c, i) {
+    return '<tr' + (i === 0 ? ' data-item="073-59"' : '') + '><td><span class="undef">' + c.builCode + '</span><br><a href="adm-012.html">' + c.buil + '</a></td><td class="c">' + c.kai + '</td><td class="c">' + c.name +
+      '</td><td class="c">' + c.tsubo + '</td><td class="c">' + c.type + '</td><td class="c">' + c.guideDate + '</td><td class="c">' + c.koho + '</td><td class="c">' + c.ichiban +
+      '</td><td class="c">' + c.candiDate + '</td><td class="c">' + c.seq + '</td><td>' + c.memo + '</td><td class="c">' + ic + '</td><td></td><td class="c">' + dl + '</td></tr>';
+  }).join('');
+  document.getElementById('contactRows').innerHTML = C.contacts.map(function (c, i) {
+    return '<tr' + (i === 0 ? ' data-item="073-139"' : '') + '><td class="c" rowspan="3"><input type="checkbox"' + (c.type1 ? ' checked' : '') + '></td><td class="c" rowspan="3"><input type="checkbox"' + (c.type2 ? ' checked' : '') + '></td>' +
+      '<td class="c" rowspan="3">' + c.seq + '</td><td colspan="2">' + c.sect + '</td><td>' + c.name + '</td><td class="c" rowspan="2">' + c.tel + '</td><td rowspan="2">' + c.mail + '</td>' +
+      '<td rowspan="3" class="c">' + ic + '</td><td rowspan="3"></td><td rowspan="3" class="c">' + dl + '</td></tr>' +
+      '<tr><td colspan="2">' + c.post + '</td><td>' + c.kana + '</td></tr>' +
+      '<tr><th' + (i === 0 ? ' data-item="073-138"' : '') + '>備考</th><td colspan="4">' + c.memo + '</td></tr>';
+  }).join('');
+
+  document.querySelectorAll('#tabs > ul.nav li').forEach(function (li) {
+    li.addEventListener('click', function () {
+      document.querySelectorAll('#tabs > ul.nav li').forEach(function (x) { x.classList.toggle('on', x === li); });
+      document.querySelectorAll('#tabs > .panel').forEach(function (p) { p.classList.toggle('on', p.id === li.getAttribute('data-tab')); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

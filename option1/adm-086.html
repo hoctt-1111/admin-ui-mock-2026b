@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-086 レポートリスト｜Option 1 現行UI踏襲（提案用イメージ）</title>
+<style>
+/* ===== Option 1 共通ベース（font のみ読みやすいシステムフォントへ変更） ===== */
+* { box-sizing: border-box; }
+body { margin: 0; background: #e9e9e9; color: #333; font: 13px/1.5 -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
+.canvas { width: 1440px; min-height: 100vh; margin: 0 auto; background: #fff; }
+.proposal-bar { display: flex; align-items: center; gap: 14px; height: 34px; padding: 0 14px; background: #fff8d6; border-bottom: 1px solid #e0c96b; font-size: 12px; }
+.proposal-bar .stamp { padding: 1px 8px; border: 1px solid #8a5a00; color: #8a5a00; font-weight: bold; }
+.proposal-bar a { color: #336699; }
+.proposal-bar a.cur { color: #000; font-weight: bold; text-decoration: none; }
+.proposal-bar .sp { margin-left: auto; color: #8a5a00; }
+table { border-collapse: collapse; }
+.backdrop { padding: 30px 0 40px; background: #9a9a9a; }
+.dialog { margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.dialog .titlebar { display: flex; justify-content: space-between; padding: 3px 10px; background: #ddd; font-weight: bold; }
+.note-inline { color: #888; font-size: 11px; }
+/* ===== 画面固有（sales/css/publish.css, sales/css/common.css 参照） ===== */
+#ctrl { display: flex; align-items: center; gap: 20px; padding: 10px; background: #1b1e24; color: #fff; }
+#ctrl h1 { margin: 0; font-size: 18px; font-weight: bold; color: #fff; }
+#ctrl ul { display: flex; margin: 0 0 0 auto; padding: 0; list-style: none; }
+#ctrl .chkbox { padding: 2px 6px; border: 1px solid #ccc; color: #ccc; cursor: pointer; }
+#ctrl .chkbox.on { background: #1c75ba; border-color: #1c75ba; color: #fff; }
+#list table.list { width: 100%; table-layout: fixed; background: #fff; }
+#list th { padding: 5px; background: #1b1e24; border: 0; font-size: 12px; font-weight: normal; color: #fff; }
+#list td { padding: 5px; border: 0; font-size: 12px; }
+#list td.bottom { border-bottom: 1px solid #ccc; }
+#list a.op { display: inline-block; min-width: 26px; padding: 0 4px; font-size: 13px; font-weight: bold; color: #1b1e24; text-decoration: none; text-align: center; }
+#list a.op.del { color: #900; }
+#list tr.statusX td { background: #ddd; color: #888; }
+#list .url { color: #555; }
+.loading { margin: 0; padding: 6px 10px; color: #888; font-size: 12px; }
+.c { text-align: center; } .l { text-align: left; } .t { vertical-align: top; }
+.confirm { width: 360px; margin: 10px auto 0; border: 1px solid #ccc; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.confirm .tb { padding: 3px 10px; background: #369; color: #fff; font-weight: bold; }
+.confirm .bd { padding: 12px; }
+.confirm .bp { display: flex; justify-content: space-between; padding: 6px 10px; border-top: 1px solid #ddd; }
+.confirm button { padding: 5px 20px; font-weight: bold; border: 1px solid #999; background: #eee; cursor: pointer; font: inherit; }
+</style>
+<script src="../shared/mock-data.js"></script>
+</head>
+<body>
+<div class="canvas">
+
+<div class="proposal-bar">
+  <span class="stamp">提案用イメージ</span>
+  <span>Option 1 現行UI踏襲</span>
+  <span>業務フロー:</span>
+  <a href="adm-073.html">1 顧客設定</a> →
+  <a href="adm-030.html">2 物件一覧</a> →
+  <a href="adm-012.html">3 ビル詳細</a> →
+  <a href="adm-096.html">4 レポート ビル設定</a> →
+  <a class="cur" href="adm-086.html">5 レポートリスト</a>
+  <span class="sp">データはすべて架空です</span>
+</div>
+
+<!-- 現行: 営業ダッシュボードの「物件紹介 ＊＊回」「案内 ＊＊回」から jQuery UI ダイアログ（1100×600）で開く -->
+<div class="backdrop">
+<div class="dialog" style="width:1100px">
+  <div class="titlebar" data-item="086-01"><span id="dlgTitle"></span><span>×</span></div>
+  <div id="ctrl">
+    <h1 data-item="086-02">レポートリスト</h1>
+    <form><ul><li><span class="chkbox" data-item="086-03" id="chkDeleted">削除したものを表示</span></li></ul></form>
+  </div>
+  <main>
+    <section id="list">
+      <p class="loading" data-item="086-04">（読込中は「レポートを読み込み中です。しばらくお待ちください。」を表示）</p>
+      <table class="list">
+        <colgroup><col width="100"><col width="40"><col width="60"><col width="150"><col><col width="100"><col width="100"><col width="100"><col width="100"><col width="100"></colgroup>
+        <thead><tr>
+          <th data-item="086-05"></th><th data-item="086-06">No</th><th data-item="086-07">種別</th><th data-item="086-08">発行日時</th><th class="l" data-item="086-09">タイトル</th>
+          <th data-item="086-10">棟数</th><th data-item="086-11">管理外</th><th data-item="086-12">物件数</th><th data-item="086-13">閲覧期限</th><th data-item="086-14">顧客閲覧</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+  <div class="confirm" data-item="086-21">
+    <div class="tb">確認</div>
+    <div class="bd">このレポートを公開します。よろしいですか？</div>
+    <div class="bp"><button>いいえ</button><button>はい</button></div>
+  </div>
+  <p class="note-inline" style="padding:0 10px 10px">※公開／非公開／削除／復元はいずれも上記の確認ダイアログを表示。公開すると顧客の行動履歴に自動記録（現行仕様）。期限切れ行はグレー表示。</p>
+</div>
+<p style="width:1100px;margin:8px auto 0;color:#fff;font-size:12px">公開後、表示された URL をお客様へメール等で通知 → 顧客閲覧に日時が入る。<a style="color:#fff" href="adm-073.html">顧客設定（履歴）へ戻る</a></p>
+</div>
+</div><!-- /canvas -->
+
+<script>
+(function () {
+  var M = window.MOCK, C = M.customer;
+  document.getElementById('dlgTitle').textContent = '[' + C.no + '] ' + C.comName + '様向け 紹介レポートリスト';
+  var OPS = {
+    published:   '<a class="op" title="非公開" data-item="086-17">非</a><a class="op del" title="削除" data-item="086-18">×</a>',
+    unpublished: '<a class="op" title="公開" data-item="086-16">公</a><a class="op del" title="削除">×</a>',
+    expired:     '<a class="op" title="非公開">非</a><a class="op del" title="削除">×</a>',
+    deleted:     '<a class="op" title="復元" data-item="086-19">戻</a>'
+  };
+  var rows = M.reports.slice();
+  rows.push({ no: 2650, type: '紹介', dt: '2026/04/10 10:00', title: '（削除済の例）', bcnt: 2, ocnt: 0, fcnt: 3, limit: '2026/07/09 00:00', remain: '', viewed: '', status: 'deleted', hash: 'p6q7r8s9t0' });
+  function render(showDeleted) {
+    document.getElementById('rows').innerHTML = rows.filter(function (r) { return showDeleted || r.status !== 'deleted'; }).map(function (r, i) {
+      var cls = (r.status === 'expired' || r.status === 'deleted') ? 'statusX' : '';
+      return '<tr class="' + cls + '"' + (r.status === 'expired' ? ' data-item="086-20"' : '') + '><td class="c">' + OPS[r.status] + '</td><td class="c">' + r.no + '</td><td class="c">' + r.type + '</td><td class="c">' + r.dt + '</td>' +
+        '<td class="l"><a href="adm-096.html" title="レポート編集へ">' + r.title + '</a></td><td class="c">' + r.bcnt + '</td><td class="c">' + r.ocnt + '</td><td class="c">' + r.fcnt + '</td>' +
+        '<td class="t c bottom" rowspan="2">' + r.limit + '<br>' + r.remain + '</td><td class="t c bottom" rowspan="2">' + r.viewed + '</td></tr>' +
+        '<tr class="' + cls + '"><td class="bottom"></td><td class="bottom"></td><td class="bottom"></td><td class="bottom url" colspan="5"' + (i === 0 ? ' data-item="086-15"' : '') + '>' + M.reportBaseUrl + r.hash + '/</td></tr>';
+    }).join('');
+  }
+  render(false);
+  var chk = document.getElementById('chkDeleted');
+  chk.onclick = function () { chk.classList.toggle('on'); render(chk.classList.contains('on')); };
+})();
+</script>
+</body>
+</html>

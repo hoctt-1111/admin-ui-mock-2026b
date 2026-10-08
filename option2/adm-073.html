@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-073 顧客設定｜Option 2 UI刷新（提案用イメージ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ==== Option 2 共通（design-system.md と同期。5画面で同一ブロック） ==== */
+:root {
+  --primary: #2563EB; --primary-h: #1D4ED8; --primary-50: #EFF6FF; --primary-100: #DBEAFE;
+  --secondary: #3B82F6;
+  --bg: #F8FAFC; --surface: #FFFFFF; --surface-2: #F1F5F9;
+  --text: #1E293B; --muted: #475569; --subtle: #64748B;
+  --border: #E2E8F0; --border-s: #CBD5E1;
+  --cta: #F97316; --cta-h: #FB923C; --cta-ink: #431407;
+  --danger: #B91C1C; --danger-50: #FEF2F2;
+  --ok: #166534; --ok-50: #DCFCE7;
+  --rfi: #6D28D9; --rfi-50: #F5F3FF; --rfi-b: #A78BFA;
+  --a0: #166534; --a0b: #DCFCE7;  /* 空 */
+  --a1: #115E59; --a1b: #CCFBF1;  /* 未解約 */
+  --a2: #92400E; --a2b: #FEF3C7;  /* 先行有 */
+  --a3: #9F1239; --a3b: #FFE4E6;  /* 申込有 */
+  --a4: #5B21B6; --a4b: #EDE9FE;  /* 内定有 */
+  --a5: #334155; --a5b: #E2E8F0;  /* 済 */
+  --r: 6px; --r-s: 4px;
+  --sh: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.08);
+  --sh-l: 0 8px 24px rgba(15,23,42,.16);
+  --t: 180ms ease;
+  --side: 208px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 1440px; background: var(--bg); color: var(--text);
+  font: 400 13px/1.55 "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.num, .tbl td.r, .kv dd.num, input.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.35; }
+h1 { font-size: 20px; font-weight: 700; }
+h2 { font-size: 15px; font-weight: 700; }
+h3 { font-size: 13px; font-weight: 700; }
+a { color: var(--primary); text-decoration: none; transition: color var(--t); }
+a:hover { color: var(--primary-h); text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--primary-h); outline-offset: 2px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+.i-s { width: 14px; height: 14px; }
+.i-l { width: 20px; height: 20px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; z-index: 99; padding: 8px 12px; background: var(--surface); }
+.skip:focus { left: 8px; top: 8px; }
+
+/* ---- 提案用リボン（製品UIではない） ---- */
+.ribbon { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 16px; background: #0F172A; color: #E2E8F0; font-size: 12px; }
+.ribbon .stamp { padding: 2px 10px; border-radius: 3px; background: var(--cta); color: var(--cta-ink); font-weight: 700; letter-spacing: .04em; }
+.ribbon .opt { font-weight: 700; color: #fff; }
+.ribbon .flow { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
+.ribbon .flow a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; color: #CBD5E1; }
+.ribbon .flow a b { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #334155; color: #fff; font-size: 11px; }
+.ribbon .flow a:hover { background: #1E293B; color: #fff; text-decoration: none; }
+.ribbon .flow a[aria-current] { background: #fff; color: #0F172A; font-weight: 700; }
+.ribbon .flow a[aria-current] b { background: var(--primary); }
+.ribbon .flow .sep { color: #64748B; }
+.ribbon .rt { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.ribbon .rt a { color: #BFDBFE; }
+.ribbon label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.ribbon .fict { color: #94A3B8; }
+
+/* ---- アプリシェル ---- */
+.app { display: grid; grid-template-columns: var(--side) 1fr; min-height: calc(100vh - 40px); }
+.side { position: sticky; top: 40px; height: calc(100vh - 40px); overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; }
+.brand { display: flex; align-items: center; gap: 8px; padding: 2px 8px 14px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.brand .mk { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: var(--primary); color: #fff; }
+.brand b { display: block; font-size: 13px; }
+.brand small { display: block; color: var(--subtle); font-size: 11px; }
+.side .grp { margin: 12px 8px 4px; color: var(--subtle); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.side ul { margin: 0; padding: 0; list-style: none; }
+.side a { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--r-s); color: var(--muted); font-weight: 500; transition: background var(--t), color var(--t); }
+.side a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.side a[aria-current] { background: var(--primary-50); color: var(--primary-h); box-shadow: inset 3px 0 0 var(--primary); }
+.side .perm { margin: 14px 8px 0; color: var(--subtle); font-size: 11px; line-height: 1.5; }
+.main { min-width: 0; }
+.top { position: sticky; top: 40px; z-index: 40; display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--border); }
+.crumb { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.crumb li + li::before { content: "/"; margin-right: 6px; color: var(--border-s); }
+.crumb [aria-current] { color: var(--text); font-weight: 500; }
+.user { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 12px; }
+.avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary-100); color: var(--primary-h); font-weight: 700; font-size: 12px; }
+.content { padding: 20px 24px 96px; }
+
+/* ---- 汎用部品 ---- */
+.page-h { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.page-h .ttl { flex: 1; min-width: 0; }
+.page-h .sub { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.page-h .acts { display: flex; gap: 8px; align-items: center; }
+.row { display: flex; align-items: center; gap: 8px; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.ml-auto { margin-left: auto; }
+.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; }
+.muted { color: var(--muted); } .small { font-size: 12px; } .xs { font-size: 11px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); }
+.card-h { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.card-b { padding: 16px; }
+.card + .card { margin-top: 16px; }
+.sec-t { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+.sec-t:first-child { margin-top: 0; }
+.sec-t::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid var(--border-s); border-radius: var(--r-s);
+  background: var(--surface); color: var(--text); font: inherit; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t); }
+.btn:hover { background: var(--surface-2); border-color: #94A3B8; text-decoration: none; color: var(--text); }
+.btn:active { transform: translateY(1px); }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-p { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-h); border-color: var(--primary-h); color: #fff; }
+.btn-cta { background: var(--cta); border-color: #EA580C; color: var(--cta-ink); font-weight: 700; }
+.btn-cta:hover { background: var(--cta-h); border-color: #EA580C; color: var(--cta-ink); box-shadow: 0 2px 8px rgba(249,115,22,.35); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); border-color: transparent; }
+.btn-dg { color: var(--danger); }
+.btn-dg:hover { background: var(--danger-50); border-color: #FCA5A5; color: var(--danger); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.ib { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: var(--r-s); background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t), color var(--t); }
+.ib:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.ib.dg:hover { background: var(--danger-50); color: var(--danger); }
+.ib-sm { width: 28px; height: 28px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > label, .field > .lb { color: var(--muted); font-size: 12px; font-weight: 500; }
+.field .help { color: var(--subtle); font-size: 11px; }
+.field .err { display: flex; align-items: center; gap: 4px; color: var(--danger); font-size: 12px; }
+.inp, select.inp, textarea.inp { width: 100%; height: 34px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: var(--r-s); background: var(--surface); color: var(--text); font: inherit; transition: border-color var(--t), box-shadow var(--t); }
+textarea.inp { height: auto; min-height: 64px; padding: 8px 10px; line-height: 1.55; resize: vertical; }
+.inp:hover { border-color: #94A3B8; }
+.inp:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
+.inp[readonly] { background: var(--surface-2); color: var(--muted); }
+.inp.is-err { border-color: var(--danger); }
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.g6 { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 12px; }
+.span2 { grid-column: span 2; } .span3 { grid-column: span 3; } .span4 { grid-column: span 4; } .full { grid-column: 1 / -1; }
+.ck { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; }
+.ck input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+
+/* チップ（トグル選択） */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: 14px; background: var(--surface); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t); }
+.chip:hover { border-color: var(--secondary); color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--primary-50); border-color: var(--primary); color: var(--primary-h); font-weight: 500; }
+.chip[aria-pressed="true"]::before { content: ""; width: 10px; height: 6px; margin: -3px 2px 0 0; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.chip.rm { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+
+/* ピル（状態表示） */
+.pill { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 12px; font-weight: 500; white-space: nowrap; background: var(--surface-2); color: var(--muted); }
+.pill .i { width: 13px; height: 13px; }
+.pill.blue { background: var(--primary-100); color: #1E40AF; }
+.pill.green { background: var(--ok-50); color: var(--ok); }
+.pill.gray { background: var(--a5b); color: var(--a5); }
+.pill.red { background: var(--danger-50); color: var(--danger); }
+.pill.amber { background: var(--a2b); color: var(--a2); }
+.aki { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 6px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.aki .i { width: 13px; height: 13px; stroke-width: 2.4; }
+.aki-0 { background: var(--a0b); color: var(--a0); } .aki-1 { background: var(--a1b); color: var(--a1); } .aki-2 { background: var(--a2b); color: var(--a2); }
+.aki-3 { background: var(--a3b); color: var(--a3); } .aki-4 { background: var(--a4b); color: var(--a4); } .aki-5 { background: var(--a5b); color: var(--a5); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+
+/* RFI 注記バッジ（機能は未実装・配置予定のみ） */
+.rfi { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border: 1px dashed var(--rfi-b); border-radius: 10px; background: var(--rfi-50); color: var(--rfi); font-size: 11px; font-weight: 500; white-space: nowrap; cursor: help; vertical-align: middle; }
+.rfi .i { width: 12px; height: 12px; }
+body.no-rfi .rfi { display: none; }
+
+/* キー・値 */
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin: 0; }
+.kv dt { color: var(--muted); font-size: 12px; }
+.kv dd { margin: 0; min-width: 0; }
+.kv-g { display: grid; gap: 1px; margin: 0; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-s); overflow: hidden; }
+.kv-g > div { padding: 6px 10px; background: var(--surface); }
+.kv-g dt { color: var(--muted); font-size: 11px; }
+.kv-g dd { margin: 0; font-weight: 500; }
+
+/* テーブル */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-s); background: var(--surface); }
+.tbl-wrap:focus-visible { outline-offset: -2px; }
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.tbl th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: var(--surface-2); border-bottom: 1px solid var(--border-s); color: var(--muted); font-weight: 500; text-align: left; white-space: nowrap; }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tbl tbody tr { transition: background var(--t); }
+.tbl tbody tr:hover > td { background: #F8FAFC; }
+.tbl tr:last-child > td { border-bottom: 0; }
+.tbl .r { text-align: right; } .tbl .c { text-align: center; }
+.tbl th.r { text-align: right; }
+.tbl .nw { white-space: nowrap; }
+.tbl .sel { width: 36px; text-align: center; }
+.tbl tr.done > td { background: #F8FAFC; color: var(--muted); }
+.tbl .grp-h { background: #EEF2F7; color: var(--text); font-weight: 700; }
+.tbl .stk { position: sticky; left: 0; z-index: 2; background: inherit; }
+.sub-l { display: block; color: var(--subtle); font-size: 11px; }
+
+/* タブ */
+.tabs { display: flex; gap: 2px; padding: 0 12px; border-bottom: 1px solid var(--border); }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; transition: color var(--t); }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--primary-h); font-weight: 700; }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--primary); }
+.tab .cnt { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 11px; line-height: 18px; text-align: center; }
+.tab .was { color: var(--subtle); font-size: 11px; font-weight: 400; }
+.panel { padding: 16px; }
+.panel[hidden] { display: none; }
+
+/* ドロップダウン（details） */
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu .pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh-l); }
+.menu .pop a, .menu .pop button { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: var(--r-s); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.menu .pop a:hover, .menu .pop button:hover { background: var(--surface-2); text-decoration: none; }
+.menu .pop .hd { padding: 6px 10px 2px; color: var(--subtle); font-size: 11px; }
+
+/* 統計タイル */
+.stats { display: grid; gap: 12px; }
+.stat { padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); min-width: 0; }
+.stat .lb { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.stat .v { margin-top: 4px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.stat .n { margin-top: 2px; color: var(--subtle); font-size: 11px; }
+
+/* 空状態・表示パターン */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px; color: var(--muted); text-align: center; }
+.empty .i { width: 28px; height: 28px; color: var(--subtle); }
+details.pattern { margin-top: 12px; color: var(--muted); font-size: 12px; }
+details.pattern > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+details.pattern .box { margin-top: 8px; padding: 12px; border: 1px dashed var(--border-s); border-radius: var(--r); background: var(--surface); }
+
+/* 一括操作バー / 固定フッター */
+.bulk { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #BFDBFE; border-radius: var(--r); background: var(--primary-50); }
+.bulk .cnt { font-weight: 700; color: var(--primary-h); }
+.dock { position: fixed; left: var(--side); right: 0; bottom: 0; z-index: 45; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 24px; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 16px rgba(15,23,42,.08); }
+.thumb { display: grid; place-items: center; background: repeating-linear-gradient(135deg, #E2E8F0 0 8px, #F1F5F9 8px 16px); border-radius: var(--r-s); color: var(--subtle); }
+.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 12px; }
+.modal-bg { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgba(15,23,42,.45); }
+.modal-bg[hidden] { display: none; }
+.modal { width: 440px; background: var(--surface); border-radius: 8px; box-shadow: var(--sh-l); }
+.modal .mh { padding: 16px 20px 0; }
+.modal .mb { padding: 10px 20px 16px; color: var(--muted); }
+.modal .mf { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); }
+
+/* ==== 画面固有 ==== */
+.strip { grid-template-columns: 1.1fr .9fr .8fr 1fr 2.2fr; margin-bottom: 16px; }
+.inp.bare { height: 30px; padding: 0 6px; margin-left: -6px; border-color: transparent; background: transparent; font-size: 16px; font-weight: 700; }
+.inp.bare:hover { border-color: var(--border-s); background: var(--surface); }
+.inp.bare:focus { background: var(--surface); }
+.todo { display: grid; grid-template-columns: 112px 1fr; gap: 6px 8px; margin-top: 6px; }
+.todo .inp { height: 30px; }
+.lay { display: grid; grid-template-columns: 340px minmax(0,1fr); gap: 16px; align-items: start; }
+.left .card-b { display: grid; gap: 10px; }
+.left .sec-t { margin: 8px 0 0; }
+.needs-sum { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 0; }
+.needs-sum > div { padding: 10px 14px; border-left: 1px solid var(--border); }
+.needs-sum > div:first-child { border-left: 0; }
+.needs-sum .k { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.needs-sum .v { margin-top: 2px; font-weight: 700; }
+.needs-sum .n { color: var(--subtle); font-size: 11px; }
+.pri { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; }
+.cmp td { vertical-align: top; }
+.cmp .it { width: 88px; font-weight: 700; }
+.cmp .pr { width: 64px; }
+.cmp .pr select { width: 52px; }
+.cmp .sub td { border-top: 0; }
+.cmp .inline { display: flex; align-items: center; gap: 6px; }
+.cmp .inline .inp { width: 84px; }
+.result { display: inline-flex; align-items: center; gap: 4px; }
+.hist td.d { width: 104px; }
+.addrow { display: grid; grid-template-columns: 130px 120px 150px 120px 1fr auto; gap: 8px; align-items: end; padding: 12px; margin-bottom: 12px; border: 1px solid #BFDBFE; border-radius: var(--r); background: var(--primary-50); }
+.addrow[hidden] { display: none; }
+.mask { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); letter-spacing: .1em; }
+</style>
+<script src="../shared/mock-data.js"></script>
+<script>
+/* ==== Option 2 共通 JS（5画面で同一ブロック） ==== */
+var UI = (function () {
+  var M = window.MOCK;
+  var AKI_ICON = ['aki0', 'aki1', 'aki2', 'aki3', 'aki4', 'aki5'];
+  function ic(name, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+  function aki(i, item) { return '<span class="aki aki-' + i + '"' + (item ? ' data-item="' + item + '"' : '') + '>' + ic(AKI_ICON[i]) + M.AKI[i] + '</span>'; }
+  function di(on, id) { return on ? ' data-item="' + id + '"' : ''; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function get(ctx, path) { return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, ctx); }
+  /* data-bind="C.comName" に MOCK の値を流し込む（data-fmt: yen / f2） */
+  function bind(ctx, root) {
+    (root || document).querySelectorAll('[data-bind]').forEach(function (el) {
+      var v = get(ctx, el.getAttribute('data-bind')), f = el.getAttribute('data-fmt');
+      if (v == null) v = '';
+      if (f === 'yen' && v !== '') v = M.yen(v);
+      if (f === 'f2' && v !== '') v = Number(v).toFixed(2);
+      if (el.type === 'checkbox') { el.checked = !!v; return; }
+      if (el.tagName === 'SELECT') { el.innerHTML = '<option>' + esc(v) + '</option>'; return; }
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v; else el.textContent = v;
+    });
+  }
+  /* チップ群（マスタ由来ラベルは仮） */
+  function chips(el, all, on, item) {
+    el.innerHTML = all.map(function (l) { return '<button type="button" class="chip" aria-pressed="' + (on.indexOf(l) >= 0) + '">' + esc(l) + '</button>'; }).join('');
+    if (item) el.setAttribute('data-item', item);
+  }
+  /* タブ（キーボード ←→ 対応） */
+  function tabs(list) {
+    var ts = Array.prototype.slice.call(list.querySelectorAll('[role=tab]'));
+    function sel(t) {
+      ts.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute('aria-controls')).hidden = !on; });
+    }
+    ts.forEach(function (t, i) {
+      t.addEventListener('click', function () { sel(t); });
+      t.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+        var n = ts[(i + d + ts.length) % ts.length]; n.focus(); sel(n);
+      });
+    });
+    sel(ts.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0] || ts[0]);
+  }
+  function addr(b) { return b.pref + b.chikuName + b.address + b.cyoume + '-' + b.banchi + '-' + b.gou; }
+  function daysSince(d) { var a = new Date(M.today.replace(/\//g, '-')), b = new Date(d.replace(/\//g, '-')); return Math.round((a - b) / 864e5); }
+  document.addEventListener('DOMContentLoaded', function () {
+    var t = document.getElementById('rfiToggle');
+    if (t) t.addEventListener('change', function () { document.body.classList.toggle('no-rfi', !t.checked); });
+    document.querySelectorAll('.chips').forEach(function (g) {
+      g.addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c && !c.classList.contains('rm')) c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true'); });
+    });
+    document.querySelectorAll('[role=tablist]').forEach(tabs);
+    document.addEventListener('click', function (e) { document.querySelectorAll('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+  });
+  return { M: M, ic: ic, aki: aki, di: di, esc: esc, bind: bind, chips: chips, tabs: tabs, addr: addr, daysSince: daysSince };
+})();
+</script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<!-- Lucide 準拠の線アイコン（24x24 / stroke 2）。絵文字は使わない -->
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol>
+<symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+<symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+<symbol id="i-bookmark-plus" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><path d="M12 7v6"/><path d="M15 10H9"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+<symbol id="i-train" viewBox="0 0 24 24"><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></symbol>
+<symbol id="i-columns" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></symbol>
+<symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+<symbol id="i-sort" viewBox="0 0 24 24"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<!-- フロア状況 6 種（色＋アイコン＋文字の三重表示） -->
+<symbol id="i-aki0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></symbol>
+<symbol id="i-aki1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-aki2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+<symbol id="i-aki3" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 15h6"/></symbol>
+<symbol id="i-aki4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+<symbol id="i-aki5" viewBox="0 0 24 24"><rect width="16" height="10" x="4" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+</svg>
+
+<a class="skip" href="#main">本文へスキップ</a>
+<div class="ribbon" role="region" aria-label="提案用ナビゲーション（製品UIではありません）">
+  <span class="stamp">提案用イメージ</span><span class="opt">Option 2　UI刷新</span>
+  <nav class="flow" aria-label="業務フロー 物件出し〜提案送付"><a href="adm-073.html" aria-current="page"><b>1</b>顧客設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-030.html"><b>2</b>物件一覧</a><span class="sep" aria-hidden="true">›</span><a href="adm-012.html"><b>3</b>ビル詳細</a><span class="sep" aria-hidden="true">›</span><a href="adm-096.html"><b>4</b>レポート ビル設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-086.html"><b>5</b>レポートリスト</a></nav>
+  <div class="rt">
+    <label><input type="checkbox" id="rfiToggle" checked> RFI注記を表示</label>
+    <a href="../index.html#screens/073/option1" target="_top">Option 1 で見る</a>
+    <a href="../index.html#about" target="_top">モック一覧</a>
+    <span class="fict">データはすべて架空です</span>
+  </div>
+</div>
+<div class="app">
+  <aside class="side" aria-label="グローバルメニュー">
+    <div class="brand"><span class="mk"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg></span><div><b>貸事務所ドットコム</b><small>管理システム</small></div></div>
+    <nav data-item="030-01" aria-label="グローバルメニュー"><div class="grp">営業</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-dash"/></svg>ダッシュボード</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>物件</a></li><li><a href="#" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>顧客</a></li></ul><div class="grp">Webコンテンツ</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg>特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg>エリア特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-trend"/></svg>相場</a></li></ul><div class="grp">管理</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-key"/></svg>オーナー</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-train"/></svg>路線</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-db"/></svg>マスター</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg>スタッフ</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>ログ</a></li></ul></nav>
+    <p class="perm">表示メニューは権限により変わります（現行仕様どおり）。</p>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <ol class="crumb" aria-label="パンくず"><li>顧客</li><li aria-current="page">顧客詳細</li></ol>
+      <div class="user" data-item="030-02"><span class="avatar" aria-hidden="true">佐</span><span>ログイン中：<b id="loginName"></b> さん</span></div>
+    </header>
+    <main id="main" class="content">
+
+<div class="page-h">
+  <div class="ttl">
+    <div class="row">
+      <h1 data-item="073-01"><span class="num muted">[<span data-bind="C.no"></span>]</span> <span data-bind="C.comName"></span><span class="muted" style="margin-left:8px;font-size:14px;font-weight:500">顧客詳細</span></h1>
+    </div>
+    <div class="sub row">
+      <span data-item="073-09">初回登録 <span class="num" data-bind="C.regist"></span>（<span data-bind="C.register"></span>）</span>
+      <span aria-hidden="true">・</span>
+      <span data-item="073-13">最終更新 <span class="num" data-bind="C.update"></span>（<span data-bind="C.updater"></span>）</span>
+    </div>
+  </div>
+  <div class="acts">
+    <a class="btn" href="adm-030.html">物件一覧で候補を探す<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+    <span class="rfi" title="ニーズ条件での全件再マッチング（将来機能の配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI M-01</span>
+    <span style="width:1px;height:24px;background:var(--border)"></span>
+    <button class="btn btn-dg" type="button" data-item="073-02"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>削除</button>
+    <button class="btn" type="button" data-item="073-03"><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>コピー</button>
+    <button class="btn btn-cta" type="button" data-item="073-04"><svg class="i" aria-hidden="true"><use href="#i-save"/></svg>保存</button>
+  </div>
+</div>
+
+<!-- 判断に使う情報を最上段へ集約（進捗・ランク・見込・次のアクション） -->
+<section class="stats strip" aria-label="営業状況">
+  <div class="stat" data-item="073-12">
+    <div class="lb">進捗</div>
+    <div class="v"><span class="pill blue" style="height:26px;font-size:14px"><svg class="i" aria-hidden="true"><use href="#i-target"/></svg><span data-bind="C.status"></span></span></div>
+    <div class="n">履歴の「結果」登録で自動更新</div>
+  </div>
+  <div class="stat field" data-item="073-08">
+    <label class="lb" for="rank">ランク</label>
+    <select class="inp bare" id="rank" data-bind="C.rank"></select>
+    <div class="n">権限により表示のみ</div>
+  </div>
+  <div class="stat field" data-item="073-21">
+    <label class="lb" for="price">見込（万円）</label>
+    <input class="inp bare num" id="price" data-bind="C.price">
+  </div>
+  <div class="stat">
+    <div class="lb">A見込／B見込（万円）</div>
+    <div class="mt8" style="display:grid;gap:6px">
+      <span class="row" data-item="073-26"><span class="pill blue" style="min-width:22px">A</span><select class="inp" style="width:52px;height:28px" aria-label="A見込マーク" data-bind="C.pmarkA"></select><input class="inp num" style="width:56px;height:28px" aria-label="A見込 金額" data-bind="C.priceA"></span>
+      <span class="row" data-item="073-28"><span class="pill" style="min-width:22px">B</span><select class="inp" style="width:52px;height:28px" aria-label="B見込マーク" data-bind="C.pmarkB"></select><input class="inp num" style="width:56px;height:28px" aria-label="B見込 金額" data-bind="C.priceB"></span>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="lb"><svg class="i" aria-hidden="true"><use href="#i-cal"/></svg>次のアクション（具体策）<span class="rfi ml-auto" title="フォロー期限アラートの日数設定（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI S-09</span></div>
+    <div class="todo">
+      <input class="inp num" data-item="073-35" aria-label="具体策1 期限" data-bind="C.todo1Limit"><input class="inp" aria-label="具体策1 内容" data-bind="C.todo1">
+      <input class="inp num" data-item="073-36" aria-label="具体策2 期限" data-bind="C.todo2Limit"><input class="inp" aria-label="具体策2 内容" data-bind="C.todo2">
+    </div>
+  </div>
+</section>
+
+<div class="lay">
+  <!-- 左：基本情報（ヘッダ部の28項目をグループ化） -->
+  <aside class="left card" aria-label="基本情報">
+    <div class="card-h"><h2>基本情報</h2></div>
+    <div class="card-b">
+      <div class="sec-t">企業</div>
+      <div class="field" data-item="073-05">
+        <label for="comName">企業名</label>
+        <div class="row"><input class="inp" id="comName" data-bind="C.comName"><button class="ib" type="button" title="企業検索" aria-label="企業検索" data-item="073-06"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></button></div>
+      </div>
+      <div class="field" data-item="073-10"><label for="comKana">ｶﾅ</label><input class="inp" id="comKana" data-bind="C.comKana"></div>
+      <div class="row">
+        <label class="ck" data-item="073-07"><input type="checkbox" data-bind="C.otherEnd">エンド別</label>
+        <label class="ck" data-item="073-11"><input type="checkbox" data-bind="C.isNew">新しい企業</label>
+      </div>
+      <div class="field" data-item="073-14"><label for="br">支店名</label><input class="inp" id="br" data-bind="C.name"></div>
+      <div class="g2">
+        <div class="field" data-item="073-15"><label for="tel">代表TEL</label><input class="inp num" id="tel" data-bind="C.tel"></div>
+        <div class="field" data-item="073-19"><label for="fax">代表FAX</label><input class="inp num" id="fax" data-bind="C.fax"></div>
+      </div>
+      <div class="field" data-item="073-18"><label for="url">URL</label><input class="inp" id="url" data-bind="C.url"></div>
+
+      <div class="sec-t">営業</div>
+      <div class="g2">
+        <div class="field" data-item="073-16"><label for="s1">営業担当</label><select class="inp" id="s1" data-bind="C.staff1"></select></div>
+        <div class="field" data-item="073-20"><label for="s2">発掘担当</label><select class="inp" id="s2" data-bind="C.getter"></select></div>
+      </div>
+      <div class="field" data-item="073-17"><label for="tr">荷電</label><select class="inp" id="tr" data-bind="C.telResult"></select></div>
+
+      <div class="sec-t">入居中ビル</div>
+      <div class="field" data-item="073-27">
+        <span class="lb">ﾋﾞﾙ（ビル名・階・物件名）</span>
+        <div class="row"><input class="inp grow" aria-label="ビル名" data-bind="C.builName"><input class="inp num" style="width:52px" aria-label="階" data-bind="C.kai"><span class="muted">階</span></div>
+        <input class="inp" aria-label="物件名" placeholder="物件名" data-bind="C.bukkenName">
+      </div>
+
+      <div class="sec-t">担当・冊子送付先住所</div>
+      <div class="g2">
+        <div class="field" data-item="073-22"><label for="zip">郵便番号</label><div class="row"><input class="inp num" id="zip" data-bind="C.zip"><button class="ib" type="button" title="〒検索" aria-label="郵便番号から住所を検索"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></button></div></div>
+        <div class="field" data-item="073-23"><label for="pref">都道府県</label><select class="inp" id="pref" data-bind="C.pref"></select></div>
+      </div>
+      <div class="field" data-item="073-24"><label for="addr">住所</label><input class="inp" id="addr" data-bind="C.addr"></div>
+      <div class="field" data-item="073-25"><span class="lb">丁目－番地－号</span>
+        <div class="row"><input class="inp num" aria-label="丁目" data-bind="C.cyoume">－<input class="inp num" aria-label="番地" data-bind="C.banchi">－<input class="inp num" aria-label="号" data-bind="C.gou"></div></div>
+
+      <div class="sec-t">汎用チェック</div>
+      <div class="chips" id="custChecks"></div>
+      <p class="xs muted" style="margin:0">ラベルはマスタ設定値（モックは仮ラベル）</p>
+    </div>
+  </aside>
+
+  <div style="min-width:0">
+    <!-- ニーズ要約：どのタブを開いていても要望が見える（ニーズタブの値を表示） -->
+    <section class="card" aria-label="ニーズ要約">
+      <div class="card-h"><h2>ニーズ要約</h2><span class="muted small">要望（優先順）・ニーズタブの値を表示</span><span class="ml-auto muted small">用途：<b id="sumUsage"></b></span></div>
+      <div class="needs-sum" id="needsSum"></div>
+    </section>
+
+    <section class="card mt16">
+      <div class="tabs" role="tablist" aria-label="顧客詳細タブ">
+        <button class="tab" role="tab" id="tb-hist" aria-controls="t-hist" aria-selected="true" data-item="073-30"><svg class="i" aria-hidden="true"><use href="#i-history"/></svg>履歴<span class="cnt" id="histCnt"></span></button>
+        <button class="tab" role="tab" id="tb-needs" aria-controls="t-needs" aria-selected="false" data-item="073-32"><svg class="i" aria-hidden="true"><use href="#i-target"/></svg>ニーズ</button>
+        <button class="tab" role="tab" id="tb-cand" aria-controls="t-cand" aria-selected="false" data-item="073-31"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>案内物件<span class="cnt" id="candCnt"></span></button>
+        <button class="tab" role="tab" id="tb-comp" aria-controls="t-comp" aria-selected="false" data-item="073-33"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>企業・担当<span class="was">（旧 企業／担当 を統合）</span></button>
+      </div>
+
+      <!-- 履歴 -->
+      <div class="panel" role="tabpanel" id="t-hist" aria-labelledby="tb-hist">
+        <div class="row" style="margin-bottom:10px">
+          <p class="small muted" style="margin:0"><svg class="i i-s" aria-hidden="true"><use href="#i-info"/></svg> 結果を登録すると進捗・ランクが自動で更新されます。</p>
+          <span class="rfi" title="スマートフォンからの履歴登録の拡張（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI S-11</span>
+          <button class="btn btn-p ml-auto" type="button" id="addHist" data-item="073-42"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>履歴を追加</button>
+        </div>
+        <form class="addrow" id="histForm" hidden data-item="073-44" onsubmit="return false">
+          <div class="field"><label for="h-d">実施日</label><input class="inp num" id="h-d" value="2026/10/07"></div>
+          <div class="field"><label for="h-s">担当</label><select class="inp" id="h-s"><option>佐倉 健</option></select></div>
+          <div class="field"><label for="h-r">結果</label><select class="inp is-err" id="h-r" aria-describedby="h-r-err"><option value="">選択してください</option><option>案内</option><option>案内アポ○</option><option>物件紹介</option></select></div>
+          <div class="field"><label for="h-c">連絡方法</label><select class="inp" id="h-c"><option>TEL</option><option>メール</option><option>面談</option></select></div>
+          <div class="field"><label for="h-t">詳細内容</label><input class="inp" id="h-t"></div>
+          <div class="row"><button class="btn" type="button" id="histCancel">取消</button><button class="btn btn-p" type="button">保存</button></div>
+          <p class="err full" id="h-r-err" role="alert" style="grid-column:3/5;margin:0;color:var(--danger);font-size:12px"><svg class="i i-s" aria-hidden="true"><use href="#i-alert"/></svg>結果を選択してください（エラー表示の例）</p>
+        </form>
+        <div class="tbl-wrap">
+          <table class="tbl hist">
+            <thead><tr>
+              <th data-item="073-37">実施日</th><th data-item="073-38">担当</th><th data-item="073-39">結果</th><th data-item="073-40">連絡方法</th><th data-item="073-41">詳細内容</th><th class="c" style="width:84px">操作</th>
+            </tr></thead>
+            <tbody id="histRows"></tbody>
+          </table>
+        </div>
+        <details class="pattern"><summary><svg class="i i-s" aria-hidden="true"><use href="#i-info"/></svg>表示パターン（0件／閲覧権限なし）</summary>
+          <div class="box g2">
+            <div class="empty" data-item="073-45"><svg class="i" aria-hidden="true"><use href="#i-history"/></svg><b>履歴はまだありません</b><span class="small">「履歴を追加」から最初の対応を登録してください。</span></div>
+            <div class="empty" data-item="073-46"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><b>この顧客の履歴を閲覧する権限がありません</b><span class="small">権限 A：全顧客 ／ B：チームの顧客 ／ C：自分の顧客のみ。範囲外は <span class="mask">****</span> で表示します。</span></div>
+          </div>
+        </details>
+      </div>
+
+      <!-- ニーズ：比較表を先頭に、集客情報は下段へ -->
+      <div class="panel" role="tabpanel" id="t-needs" aria-labelledby="tb-needs" hidden>
+        <div class="row" style="margin-bottom:10px"><h3>現在と要望の比較</h3><span class="small muted ml-auto" data-item="073-68">最後にニーズを修正した日：<b class="num" data-bind="N.lastUpdate"></b></span></div>
+        <div class="tbl-wrap">
+          <table class="tbl cmp">
+            <thead data-item="073-74"><tr><th class="pr">優先</th><th>項目</th><th>現在</th><th>要望</th><th>理由</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="pr" data-item="073-75"><select class="inp" aria-label="エリア 優先度" data-bind="N.areaSeq"></select></td><td class="it">エリア</td>
+                <td data-item="073-76"><span class="sub-l">入居中ビル</span><span data-bind="N.areaBuil"></span></td>
+                <td data-item="073-77"><input class="inp" aria-label="エリア 要望" data-bind="N.areaReq"></td>
+                <td data-item="073-78"><input class="inp" aria-label="エリア 理由" data-bind="N.areaMemo"></td>
+              </tr>
+              <tr>
+                <td class="pr" rowspan="2" data-item="073-79"><select class="inp" aria-label="大きさ 優先度" data-bind="N.spaceSeq"></select></td><td class="it">大きさ</td>
+                <td data-item="073-80"><div class="inline"><input class="inp num" aria-label="現在 坪" data-bind="N.curSpace">坪<select class="inp" style="width:84px" aria-label="グロス/ネット" data-bind="N.gn"></select></div></td>
+                <td data-item="073-81"><div class="inline"><input class="inp num" aria-label="要望 坪 下限" data-bind="N.reqSpace1">〜<input class="inp num" aria-label="要望 坪 上限" data-bind="N.reqSpace2">坪</div></td>
+                <td rowspan="2" data-item="073-84"><textarea class="inp" rows="2" aria-label="大きさ 理由" data-bind="N.spaceMemo"></textarea></td>
+              </tr>
+              <tr class="sub">
+                <td class="it muted" style="font-weight:500">使用人数</td>
+                <td data-item="073-82"><div class="inline"><input class="inp num" aria-label="現在 人数" data-bind="N.curNum">人<span class="muted small">1人あたり <span class="num" data-bind="N.curSpacePer"></span>坪</span></div></td>
+                <td data-item="073-83"><div class="inline"><input class="inp num" aria-label="要望 人数" data-bind="N.reqNum">人<span class="muted small">1人あたり <span class="num" data-bind="N.reqSpacePer"></span>坪</span></div></td>
+              </tr>
+              <tr>
+                <td class="pr" rowspan="2" data-item="073-85"><select class="inp" aria-label="予算 優先度" data-bind="N.feeSeq"></select></td><td class="it">予算（総額）</td>
+                <td data-item="073-86"><div class="inline"><input class="inp num" style="width:110px" aria-label="現在 総額" data-bind="N.curFee" data-fmt="yen">円</div></td>
+                <td data-item="073-87"><div class="inline"><input class="inp num" style="width:110px" aria-label="要望 総額" data-bind="N.reqFee" data-fmt="yen">円</div></td>
+                <td rowspan="2" data-item="073-90"><textarea class="inp" rows="2" aria-label="予算 理由" data-bind="N.feeMemo"></textarea></td>
+              </tr>
+              <tr class="sub">
+                <td class="it muted" style="font-weight:500">坪単価</td>
+                <td data-item="073-88"><div class="inline"><input class="inp num" style="width:110px" aria-label="現在 坪単価" data-bind="N.curFeePer" data-fmt="yen">円</div></td>
+                <td data-item="073-89"><div class="inline"><input class="inp num" style="width:110px" aria-label="要望 坪単価" data-bind="N.reqFeePer" data-fmt="yen">円</div></td>
+              </tr>
+              <tr>
+                <td class="pr" data-item="073-91"><select class="inp" aria-label="時期 優先度" data-bind="N.timingSeq"></select></td><td class="it">時期</td>
+                <td><div class="inline"><label class="ck" data-item="073-92"><input type="checkbox" data-bind="N.isCancel">解約予告済み</label><input class="inp num" aria-label="解約 月" data-bind="N.cancel"><span>迄</span></div>
+                  <div class="inline mt8" data-item="073-93"><span class="small muted">予告期間</span><input class="inp num" style="width:56px" aria-label="予告期間" data-bind="N.cancelM">ヶ月</div></td>
+                <td data-item="073-94"><input class="inp" aria-label="時期 要望" data-bind="N.reqTiming"></td>
+                <td data-item="073-95"><input class="inp" aria-label="時期 理由" data-bind="N.timingMemo"></td>
+              </tr>
+              <tr>
+                <td class="pr" data-item="073-96"><select class="inp" aria-label="設備 優先度" data-bind="N.specSeq"></select></td><td class="it">設備</td>
+                <td data-item="073-97"><span class="sub-l">問題点</span><input class="inp" aria-label="設備 問題点" data-bind="N.curSpec"></td>
+                <td><div class="chips" id="reqSpec"></div></td>
+                <td data-item="073-99"><input class="inp" aria-label="設備 理由" data-bind="N.specMemo"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sec-t mt16">移転の背景</div>
+        <div class="g2">
+          <div class="field"><span class="lb">用途</span><div class="chips" id="usage"></div></div>
+          <div class="field"><span class="lb">移転理由</span><div class="chips" id="reason"></div></div>
+          <div class="field" data-item="073-70"><label for="nb">問合せ物件</label><input class="inp" id="nb" data-bind="N.bukken"></div>
+          <div class="field" data-item="073-71"><label for="nc">問合せ物件を選んだ理由</label><input class="inp" id="nc" data-bind="N.choice"></div>
+          <div class="field full" data-item="073-73"><label for="np">移転の目的や改善したいこと</label><textarea class="inp" id="np" rows="2" data-bind="N.purpose"></textarea></div>
+          <div class="field" data-item="073-100"><label for="nr">その他要望</label><textarea class="inp" id="nr" rows="2" data-bind="N.request"></textarea></div>
+          <div class="field" data-item="073-101"><label for="nf">物件決定までの流れ</label><textarea class="inp" id="nf" rows="2" data-bind="N.flow"></textarea></div>
+        </div>
+
+        <div class="sec-t mt16">集客情報</div>
+        <div class="g4">
+          <div class="field" data-item="073-60"><label for="n1">集客日</label><input class="inp num" id="n1" data-bind="N.collect"><span class="help">営業権限のみの場合は表示のみ</span></div>
+          <div class="field" data-item="073-61"><label for="n2">入手経路</label><select class="inp" id="n2" data-bind="N.entry"></select></div>
+          <div class="field" data-item="073-62"><label for="n3">入手経路２</label><select class="inp" id="n3" data-bind="N.entry2"></select></div>
+          <div class="field" data-item="073-65"><label for="n6">入手面積</label><select class="inp" id="n6" data-bind="N.space"></select></div>
+          <div class="field" data-item="073-63"><label for="n4">地域</label><select class="inp" id="n4" data-bind="N.area"></select></div>
+          <div class="field" data-item="073-64"><label for="n5">エリア</label><select class="inp" id="n5" data-bind="N.area2"></select></div>
+          <div class="field" data-item="073-66"><label for="n7">他社依頼</label><select class="inp" id="n7" data-bind="N.other"></select></div>
+          <div class="field" data-item="073-67"><label for="n8">内装業者紹介</label><select class="inp" id="n8" data-bind="N.inner"></select></div>
+        </div>
+      </div>
+
+      <!-- 案内物件 -->
+      <div class="panel" role="tabpanel" id="t-cand" aria-labelledby="tb-cand" hidden>
+        <div class="row" style="margin-bottom:10px"><h3>案内物件</h3><span class="small muted">レポートで内覧日を設定すると自動で登録されます</span>
+          <button class="btn btn-p ml-auto" type="button" data-item="073-58"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>物件の追加</button></div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr>
+              <th data-item="073-47">物件</th><th data-item="073-48">階</th><th data-item="073-49">号室</th><th class="r" data-item="073-50">坪数</th><th data-item="073-51">種別</th>
+              <th data-item="073-52">案内日</th><th data-item="073-53">候補</th><th data-item="073-54">一番</th><th data-item="073-55">候補日</th><th data-item="073-56">重要度</th><th data-item="073-57">備考</th><th class="c">操作</th>
+            </tr></thead>
+            <tbody id="candRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 企業・担当（低頻度タブを統合） -->
+      <div class="panel" role="tabpanel" id="t-comp" aria-labelledby="tb-comp" hidden>
+        <div data-item="073-102">
+          <div class="sec-t">業種</div>
+          <div class="g4">
+            <div class="field" data-item="073-103"><label for="k1">業種1</label><select class="inp" id="k1" data-bind="K.biz1"></select></div>
+            <div class="field" data-item="073-104"><label for="k2">業種2</label><select class="inp" id="k2" data-bind="K.biz2"></select></div>
+            <div class="field" data-item="073-105"><label for="k3">業種3</label><select class="inp" id="k3" data-bind="K.biz3"></select></div>
+            <div class="field" data-item="073-106"><label for="k4">他業種</label><input class="inp" id="k4" data-bind="K.bizName"></div>
+          </div>
+          <div class="sec-t">代表</div>
+          <div class="g4">
+            <div class="field" data-item="073-107"><label for="k5">役職</label><input class="inp" id="k5" data-bind="K.bossPosi"></div>
+            <div class="field" data-item="073-108"><label for="k6">氏名</label><input class="inp" id="k6" data-bind="K.bossName"></div>
+            <div class="field" data-item="073-109"><label for="k7">カナ</label><input class="inp" id="k7" data-bind="K.bossKana"></div>
+          </div>
+          <div class="sec-t">会社規模・信用情報</div>
+          <div class="g6">
+            <div class="field" data-item="073-110"><label for="k8">設立</label><input class="inp num" id="k8" data-bind="K.start"></div>
+            <div class="field" data-item="073-111"><label for="k9">資本金（万）</label><input class="inp num" id="k9" data-bind="K.capital" data-fmt="yen"></div>
+            <div class="field" data-item="073-112"><label for="k10">従業員数</label><input class="inp num" id="k10" data-bind="K.staffs"></div>
+            <div class="field" data-item="073-113"><label for="k11">上場</label><select class="inp" id="k11" data-bind="K.ipo"></select></div>
+            <div class="field" data-item="073-118"><label for="k16">契約訪問日</label><input class="inp num" id="k16" data-bind="K.visitDate"></div>
+            <div></div>
+            <div class="field" data-item="073-114"><label for="k12">TSR</label><input class="inp num" id="k12" data-bind="K.tsr"></div>
+            <div class="field" data-item="073-115"><label for="k13">TDB</label><input class="inp num" id="k13" data-bind="K.tdb"></div>
+            <div class="field" data-item="073-116"><label for="k14">評点</label><input class="inp num" id="k14" data-bind="K.tdbRank"></div>
+            <div class="field" data-item="073-117"><label for="k15">評点確認日</label><input class="inp num" id="k15" data-bind="K.tdbDate"></div>
+          </div>
+          <div class="sec-t">冊子</div>
+          <div class="g6">
+            <div class="field" data-item="073-119"><label for="p1">冊子状態</label><select class="inp" id="p1" data-bind="K.pamph"></select></div>
+            <div class="field" data-item="073-120"><label for="p2">郵送NG日</label><input class="inp num" id="p2" data-bind="K.pamphNG"></div>
+            <div class="field" data-item="073-121"><label for="p3">郵送OK日</label><input class="inp num" id="p3" data-bind="K.pamphOK"></div>
+            <div class="field" data-item="073-122"><label for="p4">初回郵送日</label><input class="inp num" id="p4" data-bind="K.pamph1st"></div>
+            <div class="field" data-item="073-123"><label for="p5">最新郵送日</label><input class="inp num" id="p5" data-bind="K.pamphLast"></div>
+            <div class="field" data-item="073-124"><label for="p6">最新送付号</label><input class="inp num" id="p6" data-bind="K.pamphVer"></div>
+          </div>
+          <div class="sec-t">その他・他商材・拠点</div>
+          <div class="g4">
+            <div class="field" data-item="073-125"><label for="o1">情報元</label><select class="inp" id="o1" data-bind="K.src"></select></div>
+            <div class="field" data-item="073-126"><label for="o2">他商材 備蓄ｺﾝﾋﾞﾆ</label><select class="inp" id="o2" data-bind="K.product1"></select></div>
+            <div class="field" data-item="073-127"><label for="o3">他商材 ﾌﾟﾘﾝﾄﾓﾝｽﾀｰ</label><select class="inp" id="o3" data-bind="K.product2"></select></div>
+            <div class="field" data-item="073-129"><label for="o4">拠点メモ</label><input class="inp" id="o4" data-bind="K.domainMemo"></div>
+            <div class="field full"><span class="lb">拠点</span><div class="chips" id="domains"></div></div>
+          </div>
+        </div>
+        <div class="row mt16" data-item="073-34" style="margin-bottom:10px"><h3>担当者</h3><span class="small muted">並び「1」が主担当者</span>
+          <button class="btn btn-p ml-auto" type="button" data-item="073-137"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>担当の追加</button></div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr>
+              <th class="c" data-item="073-132">並び</th><th data-item="073-134">担当氏名／カナ</th><th data-item="073-133">部署／役職</th><th data-item="073-135">直通TEL</th><th data-item="073-136">Email</th>
+              <th class="c" data-item="073-130">冊子</th><th class="c" data-item="073-131">年賀</th><th data-item="073-138">備考</th><th class="c">操作</th>
+            </tr></thead>
+            <tbody id="contactRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+    </main>
+  </div>
+</div>
+<script>
+document.getElementById('loginName').textContent = UI.M.staff.sakura;
+(function () {
+  var M = UI.M, C = M.customer, N = C.needs, ic = UI.ic, esc = UI.esc;
+  UI.bind({ C: C, N: N, K: C.company });
+  UI.chips(document.getElementById('custChecks'), ['電話済', 'ニーズ確認済', '冊子送付', 'メルマガ', 'DM不可', 'チェック6', 'チェック7', 'チェック8', 'チェック9', 'チェック10', 'チェック11', 'チェック12'], C.checks, '073-29');
+  UI.chips(document.getElementById('usage'), ['事務所', '店舗', '倉庫', 'その他'], N.usage, '073-69');
+  UI.chips(document.getElementById('reason'), ['増床', '減床', '立地改善', '設備改善', 'コスト削減', '統合', 'その他'], N.reason, '073-72');
+  UI.chips(document.getElementById('reqSpec'), ['個別空調', 'OAフロア', '24H使用可', '駐車場', 'セキュリティ', '男女別トイレ', '天井高'], N.reqSpec, '073-98');
+  UI.chips(document.getElementById('domains'), ['東京', '大阪', '名古屋', '福岡', 'その他'], C.company.domains, '073-128');
+  document.getElementById('sumUsage').textContent = N.usage.join('・');
+
+  var sum = [
+    [N.areaSeq, 'エリア', 'pin', N.areaReq, N.areaMemo],
+    [N.spaceSeq, '大きさ', 'layers', N.reqSpace1 + '〜' + N.reqSpace2 + '坪', '使用人数 ' + N.reqNum + '人（現在 ' + N.curSpace + '坪）'],
+    [N.feeSeq, '予算', 'tag', '総額 ' + M.yen(N.reqFee) + '円', '坪単価 ' + M.yen(N.reqFeePer) + '円'],
+    [N.timingSeq, '時期', 'cal', N.reqTiming, '解約 ' + N.cancel + '（予告' + N.cancelM + 'ヶ月）'],
+    [N.specSeq, '設備', 'sliders', N.reqSpec.join('・'), N.specMemo]
+  ];
+  document.getElementById('needsSum').innerHTML = sum.map(function (s) {
+    return '<div><div class="k"><span class="pri">' + s[0] + '</span>' + ic(s[2], 'i-s') + s[1] + '</div><div class="v">' + esc(s[3]) + '</div><div class="n">' + esc(s[4]) + '</div></div>';
+  }).join('');
+
+  var ops = function (first, id) { return '<td class="c nw"' + UI.di(first, id) + '><button class="ib ib-sm" type="button" title="編集" aria-label="編集">' + ic('pencil') + '</button><button class="ib ib-sm dg" type="button" title="削除" aria-label="削除">' + ic('trash') + '</button></td>'; };
+  document.getElementById('histCnt').textContent = C.progress.length;
+  document.getElementById('histRows').innerHTML = C.progress.map(function (p, i) {
+    var cls = p.action.indexOf('○') >= 0 ? 'blue' : (p.action === '顧客登録' ? 'gray' : '');
+    return '<tr><td class="d num nw">' + p.date + '</td><td class="nw">' + esc(p.staff) + '</td><td class="nw"><span class="pill ' + cls + '">' + esc(p.action) + '</span></td><td class="nw">' + (p.contact ? esc(p.contact) : '<span class="muted">-</span>') + '</td><td>' + esc(p.result) + '</td>' + ops(i === 0, '073-43') + '</tr>';
+  }).join('');
+
+  document.getElementById('candCnt').textContent = C.candidates.length;
+  document.getElementById('candRows').innerHTML = C.candidates.map(function (c, i) {
+    var dash = '<span class="muted">-</span>';
+    return '<tr><td><span class="sub-l num">' + c.builCode + '</span><a href="adm-012.html">' + esc(c.buil) + '</a></td><td class="nw">' + c.kai + '</td><td>' + (c.name || dash) + '</td><td class="r num">' + c.tsubo.toFixed(2) + '</td><td><span class="pill">' + c.type + '</span></td>' +
+      '<td>' + (c.guideDate || dash) + '</td><td>' + (c.koho || dash) + '</td><td>' + (c.ichiban || dash) + '</td><td>' + (c.candiDate || dash) + '</td><td>' + (c.seq || dash) + '</td><td>' + (c.memo || dash) + '</td>' + ops(i === 0, '073-59') + '</tr>';
+  }).join('');
+
+  document.getElementById('contactRows').innerHTML = C.contacts.map(function (c, i) {
+    return '<tr><td class="c num"><span class="pri"' + (c.seq === 1 ? '' : ' style="background:var(--subtle)"') + '>' + c.seq + '</span></td><td><b>' + esc(c.name) + '</b><span class="sub-l">' + esc(c.kana) + '</span></td><td>' + esc(c.sect) + '<span class="sub-l">' + esc(c.post) + '</span></td>' +
+      '<td class="num nw">' + c.tel + '</td><td>' + esc(c.mail) + '</td><td class="c"><input type="checkbox" aria-label="冊子"' + (c.type1 ? ' checked' : '') + '></td><td class="c"><input type="checkbox" aria-label="年賀"' + (c.type2 ? ' checked' : '') + '></td><td>' + (esc(c.memo) || '<span class="muted">-</span>') + '</td>' + ops(i === 0, '073-139') + '</tr>';
+  }).join('');
+
+  var form = document.getElementById('histForm');
+  document.getElementById('addHist').onclick = function () { form.hidden = false; document.getElementById('h-d').focus(); };
+  document.getElementById('histCancel').onclick = function () { form.hidden = true; };
+})();
+</script>
+</body>
+</html>

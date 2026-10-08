@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-086 レポートリスト｜Option 2 UI刷新（提案用イメージ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ==== Option 2 共通（design-system.md と同期。5画面で同一ブロック） ==== */
+:root {
+  --primary: #2563EB; --primary-h: #1D4ED8; --primary-50: #EFF6FF; --primary-100: #DBEAFE;
+  --secondary: #3B82F6;
+  --bg: #F8FAFC; --surface: #FFFFFF; --surface-2: #F1F5F9;
+  --text: #1E293B; --muted: #475569; --subtle: #64748B;
+  --border: #E2E8F0; --border-s: #CBD5E1;
+  --cta: #F97316; --cta-h: #FB923C; --cta-ink: #431407;
+  --danger: #B91C1C; --danger-50: #FEF2F2;
+  --ok: #166534; --ok-50: #DCFCE7;
+  --rfi: #6D28D9; --rfi-50: #F5F3FF; --rfi-b: #A78BFA;
+  --a0: #166534; --a0b: #DCFCE7;  /* 空 */
+  --a1: #115E59; --a1b: #CCFBF1;  /* 未解約 */
+  --a2: #92400E; --a2b: #FEF3C7;  /* 先行有 */
+  --a3: #9F1239; --a3b: #FFE4E6;  /* 申込有 */
+  --a4: #5B21B6; --a4b: #EDE9FE;  /* 内定有 */
+  --a5: #334155; --a5b: #E2E8F0;  /* 済 */
+  --r: 6px; --r-s: 4px;
+  --sh: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.08);
+  --sh-l: 0 8px 24px rgba(15,23,42,.16);
+  --t: 180ms ease;
+  --side: 208px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 1440px; background: var(--bg); color: var(--text);
+  font: 400 13px/1.55 "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.num, .tbl td.r, .kv dd.num, input.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.35; }
+h1 { font-size: 20px; font-weight: 700; }
+h2 { font-size: 15px; font-weight: 700; }
+h3 { font-size: 13px; font-weight: 700; }
+a { color: var(--primary); text-decoration: none; transition: color var(--t); }
+a:hover { color: var(--primary-h); text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--primary-h); outline-offset: 2px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+.i-s { width: 14px; height: 14px; }
+.i-l { width: 20px; height: 20px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; z-index: 99; padding: 8px 12px; background: var(--surface); }
+.skip:focus { left: 8px; top: 8px; }
+
+/* ---- 提案用リボン（製品UIではない） ---- */
+.ribbon { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 16px; background: #0F172A; color: #E2E8F0; font-size: 12px; }
+.ribbon .stamp { padding: 2px 10px; border-radius: 3px; background: var(--cta); color: var(--cta-ink); font-weight: 700; letter-spacing: .04em; }
+.ribbon .opt { font-weight: 700; color: #fff; }
+.ribbon .flow { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
+.ribbon .flow a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; color: #CBD5E1; }
+.ribbon .flow a b { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #334155; color: #fff; font-size: 11px; }
+.ribbon .flow a:hover { background: #1E293B; color: #fff; text-decoration: none; }
+.ribbon .flow a[aria-current] { background: #fff; color: #0F172A; font-weight: 700; }
+.ribbon .flow a[aria-current] b { background: var(--primary); }
+.ribbon .flow .sep { color: #64748B; }
+.ribbon .rt { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.ribbon .rt a { color: #BFDBFE; }
+.ribbon label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.ribbon .fict { color: #94A3B8; }
+
+/* ---- アプリシェル ---- */
+.app { display: grid; grid-template-columns: var(--side) 1fr; min-height: calc(100vh - 40px); }
+.side { position: sticky; top: 40px; height: calc(100vh - 40px); overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; }
+.brand { display: flex; align-items: center; gap: 8px; padding: 2px 8px 14px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.brand .mk { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: var(--primary); color: #fff; }
+.brand b { display: block; font-size: 13px; }
+.brand small { display: block; color: var(--subtle); font-size: 11px; }
+.side .grp { margin: 12px 8px 4px; color: var(--subtle); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.side ul { margin: 0; padding: 0; list-style: none; }
+.side a { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--r-s); color: var(--muted); font-weight: 500; transition: background var(--t), color var(--t); }
+.side a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.side a[aria-current] { background: var(--primary-50); color: var(--primary-h); box-shadow: inset 3px 0 0 var(--primary); }
+.side .perm { margin: 14px 8px 0; color: var(--subtle); font-size: 11px; line-height: 1.5; }
+.main { min-width: 0; }
+.top { position: sticky; top: 40px; z-index: 40; display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--border); }
+.crumb { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.crumb li + li::before { content: "/"; margin-right: 6px; color: var(--border-s); }
+.crumb [aria-current] { color: var(--text); font-weight: 500; }
+.user { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 12px; }
+.avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary-100); color: var(--primary-h); font-weight: 700; font-size: 12px; }
+.content { padding: 20px 24px 96px; }
+
+/* ---- 汎用部品 ---- */
+.page-h { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.page-h .ttl { flex: 1; min-width: 0; }
+.page-h .sub { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.page-h .acts { display: flex; gap: 8px; align-items: center; }
+.row { display: flex; align-items: center; gap: 8px; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.ml-auto { margin-left: auto; }
+.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; }
+.muted { color: var(--muted); } .small { font-size: 12px; } .xs { font-size: 11px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); }
+.card-h { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.card-b { padding: 16px; }
+.card + .card { margin-top: 16px; }
+.sec-t { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+.sec-t:first-child { margin-top: 0; }
+.sec-t::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid var(--border-s); border-radius: var(--r-s);
+  background: var(--surface); color: var(--text); font: inherit; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t); }
+.btn:hover { background: var(--surface-2); border-color: #94A3B8; text-decoration: none; color: var(--text); }
+.btn:active { transform: translateY(1px); }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-p { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-h); border-color: var(--primary-h); color: #fff; }
+.btn-cta { background: var(--cta); border-color: #EA580C; color: var(--cta-ink); font-weight: 700; }
+.btn-cta:hover { background: var(--cta-h); border-color: #EA580C; color: var(--cta-ink); box-shadow: 0 2px 8px rgba(249,115,22,.35); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); border-color: transparent; }
+.btn-dg { color: var(--danger); }
+.btn-dg:hover { background: var(--danger-50); border-color: #FCA5A5; color: var(--danger); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.ib { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: var(--r-s); background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t), color var(--t); }
+.ib:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.ib.dg:hover { background: var(--danger-50); color: var(--danger); }
+.ib-sm { width: 28px; height: 28px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > label, .field > .lb { color: var(--muted); font-size: 12px; font-weight: 500; }
+.field .help { color: var(--subtle); font-size: 11px; }
+.field .err { display: flex; align-items: center; gap: 4px; color: var(--danger); font-size: 12px; }
+.inp, select.inp, textarea.inp { width: 100%; height: 34px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: var(--r-s); background: var(--surface); color: var(--text); font: inherit; transition: border-color var(--t), box-shadow var(--t); }
+textarea.inp { height: auto; min-height: 64px; padding: 8px 10px; line-height: 1.55; resize: vertical; }
+.inp:hover { border-color: #94A3B8; }
+.inp:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
+.inp[readonly] { background: var(--surface-2); color: var(--muted); }
+.inp.is-err { border-color: var(--danger); }
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.g6 { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 12px; }
+.span2 { grid-column: span 2; } .span3 { grid-column: span 3; } .span4 { grid-column: span 4; } .full { grid-column: 1 / -1; }
+.ck { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; }
+.ck input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+
+/* チップ（トグル選択） */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: 14px; background: var(--surface); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t); }
+.chip:hover { border-color: var(--secondary); color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--primary-50); border-color: var(--primary); color: var(--primary-h); font-weight: 500; }
+.chip[aria-pressed="true"]::before { content: ""; width: 10px; height: 6px; margin: -3px 2px 0 0; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.chip.rm { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+
+/* ピル（状態表示） */
+.pill { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 12px; font-weight: 500; white-space: nowrap; background: var(--surface-2); color: var(--muted); }
+.pill .i { width: 13px; height: 13px; }
+.pill.blue { background: var(--primary-100); color: #1E40AF; }
+.pill.green { background: var(--ok-50); color: var(--ok); }
+.pill.gray { background: var(--a5b); color: var(--a5); }
+.pill.red { background: var(--danger-50); color: var(--danger); }
+.pill.amber { background: var(--a2b); color: var(--a2); }
+.aki { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 6px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.aki .i { width: 13px; height: 13px; stroke-width: 2.4; }
+.aki-0 { background: var(--a0b); color: var(--a0); } .aki-1 { background: var(--a1b); color: var(--a1); } .aki-2 { background: var(--a2b); color: var(--a2); }
+.aki-3 { background: var(--a3b); color: var(--a3); } .aki-4 { background: var(--a4b); color: var(--a4); } .aki-5 { background: var(--a5b); color: var(--a5); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+
+/* RFI 注記バッジ（機能は未実装・配置予定のみ） */
+.rfi { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border: 1px dashed var(--rfi-b); border-radius: 10px; background: var(--rfi-50); color: var(--rfi); font-size: 11px; font-weight: 500; white-space: nowrap; cursor: help; vertical-align: middle; }
+.rfi .i { width: 12px; height: 12px; }
+body.no-rfi .rfi { display: none; }
+
+/* キー・値 */
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin: 0; }
+.kv dt { color: var(--muted); font-size: 12px; }
+.kv dd { margin: 0; min-width: 0; }
+.kv-g { display: grid; gap: 1px; margin: 0; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-s); overflow: hidden; }
+.kv-g > div { padding: 6px 10px; background: var(--surface); }
+.kv-g dt { color: var(--muted); font-size: 11px; }
+.kv-g dd { margin: 0; font-weight: 500; }
+
+/* テーブル */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-s); background: var(--surface); }
+.tbl-wrap:focus-visible { outline-offset: -2px; }
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.tbl th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: var(--surface-2); border-bottom: 1px solid var(--border-s); color: var(--muted); font-weight: 500; text-align: left; white-space: nowrap; }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tbl tbody tr { transition: background var(--t); }
+.tbl tbody tr:hover > td { background: #F8FAFC; }
+.tbl tr:last-child > td { border-bottom: 0; }
+.tbl .r { text-align: right; } .tbl .c { text-align: center; }
+.tbl th.r { text-align: right; }
+.tbl .nw { white-space: nowrap; }
+.tbl .sel { width: 36px; text-align: center; }
+.tbl tr.done > td { background: #F8FAFC; color: var(--muted); }
+.tbl .grp-h { background: #EEF2F7; color: var(--text); font-weight: 700; }
+.tbl .stk { position: sticky; left: 0; z-index: 2; background: inherit; }
+.sub-l { display: block; color: var(--subtle); font-size: 11px; }
+
+/* タブ */
+.tabs { display: flex; gap: 2px; padding: 0 12px; border-bottom: 1px solid var(--border); }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; transition: color var(--t); }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--primary-h); font-weight: 700; }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--primary); }
+.tab .cnt { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 11px; line-height: 18px; text-align: center; }
+.tab .was { color: var(--subtle); font-size: 11px; font-weight: 400; }
+.panel { padding: 16px; }
+.panel[hidden] { display: none; }
+
+/* ドロップダウン（details） */
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu .pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh-l); }
+.menu .pop a, .menu .pop button { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: var(--r-s); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.menu .pop a:hover, .menu .pop button:hover { background: var(--surface-2); text-decoration: none; }
+.menu .pop .hd { padding: 6px 10px 2px; color: var(--subtle); font-size: 11px; }
+
+/* 統計タイル */
+.stats { display: grid; gap: 12px; }
+.stat { padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); min-width: 0; }
+.stat .lb { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.stat .v { margin-top: 4px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.stat .n { margin-top: 2px; color: var(--subtle); font-size: 11px; }
+
+/* 空状態・表示パターン */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px; color: var(--muted); text-align: center; }
+.empty .i { width: 28px; height: 28px; color: var(--subtle); }
+details.pattern { margin-top: 12px; color: var(--muted); font-size: 12px; }
+details.pattern > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+details.pattern .box { margin-top: 8px; padding: 12px; border: 1px dashed var(--border-s); border-radius: var(--r); background: var(--surface); }
+
+/* 一括操作バー / 固定フッター */
+.bulk { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #BFDBFE; border-radius: var(--r); background: var(--primary-50); }
+.bulk .cnt { font-weight: 700; color: var(--primary-h); }
+.dock { position: fixed; left: var(--side); right: 0; bottom: 0; z-index: 45; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 24px; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 16px rgba(15,23,42,.08); }
+.thumb { display: grid; place-items: center; background: repeating-linear-gradient(135deg, #E2E8F0 0 8px, #F1F5F9 8px 16px); border-radius: var(--r-s); color: var(--subtle); }
+.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 12px; }
+.modal-bg { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgba(15,23,42,.45); }
+.modal-bg[hidden] { display: none; }
+.modal { width: 440px; background: var(--surface); border-radius: 8px; box-shadow: var(--sh-l); }
+.modal .mh { padding: 16px 20px 0; }
+.modal .mb { padding: 10px 20px 16px; color: var(--muted); }
+.modal .mf { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); }
+
+/* ==== 画面固有 ==== */
+.sumrow { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: var(--muted); }
+.switch input { position: absolute; opacity: 0; }
+.switch .tr { position: relative; width: 36px; height: 20px; border-radius: 10px; background: var(--border-s); transition: background var(--t); }
+.switch .tr::after { content: ""; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); transition: transform var(--t); }
+.switch input:checked + .tr { background: var(--primary); }
+.switch input:checked + .tr::after { transform: translateX(16px); }
+.switch input:focus-visible + .tr { outline: 2px solid var(--primary-h); outline-offset: 2px; }
+.rl td { vertical-align: top; }
+.rl .ttl a { font-weight: 700; font-size: 13px; }
+.url { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 2px 8px; border-radius: 3px; background: var(--surface-2); color: var(--muted); user-select: all; }
+.bar { width: 120px; height: 6px; margin-top: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--secondary); }
+.rl tr.x td { background: #F8FAFC; color: var(--muted); }
+.rl tr.x .ttl a { color: var(--muted); }
+.ops { display: flex; gap: 6px; justify-content: flex-end; }
+.steps { display: flex; align-items: center; gap: 8px; margin-top: 16px; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); color: var(--muted); font-size: 12px; }
+.steps b { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 4px; border-radius: 50%; background: var(--primary-100); color: var(--primary-h); font-size: 11px; }
+.skel { display: grid; gap: 8px; }
+.skel span { display: block; height: 14px; border-radius: 3px; background: linear-gradient(90deg, #EEF2F7, #F8FAFC, #EEF2F7); }
+</style>
+<script src="../shared/mock-data.js"></script>
+<script>
+/* ==== Option 2 共通 JS（5画面で同一ブロック） ==== */
+var UI = (function () {
+  var M = window.MOCK;
+  var AKI_ICON = ['aki0', 'aki1', 'aki2', 'aki3', 'aki4', 'aki5'];
+  function ic(name, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+  function aki(i, item) { return '<span class="aki aki-' + i + '"' + (item ? ' data-item="' + item + '"' : '') + '>' + ic(AKI_ICON[i]) + M.AKI[i] + '</span>'; }
+  function di(on, id) { return on ? ' data-item="' + id + '"' : ''; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function get(ctx, path) { return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, ctx); }
+  /* data-bind="C.comName" に MOCK の値を流し込む（data-fmt: yen / f2） */
+  function bind(ctx, root) {
+    (root || document).querySelectorAll('[data-bind]').forEach(function (el) {
+      var v = get(ctx, el.getAttribute('data-bind')), f = el.getAttribute('data-fmt');
+      if (v == null) v = '';
+      if (f === 'yen' && v !== '') v = M.yen(v);
+      if (f === 'f2' && v !== '') v = Number(v).toFixed(2);
+      if (el.type === 'checkbox') { el.checked = !!v; return; }
+      if (el.tagName === 'SELECT') { el.innerHTML = '<option>' + esc(v) + '</option>'; return; }
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v; else el.textContent = v;
+    });
+  }
+  /* チップ群（マスタ由来ラベルは仮） */
+  function chips(el, all, on, item) {
+    el.innerHTML = all.map(function (l) { return '<button type="button" class="chip" aria-pressed="' + (on.indexOf(l) >= 0) + '">' + esc(l) + '</button>'; }).join('');
+    if (item) el.setAttribute('data-item', item);
+  }
+  /* タブ（キーボード ←→ 対応） */
+  function tabs(list) {
+    var ts = Array.prototype.slice.call(list.querySelectorAll('[role=tab]'));
+    function sel(t) {
+      ts.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute('aria-controls')).hidden = !on; });
+    }
+    ts.forEach(function (t, i) {
+      t.addEventListener('click', function () { sel(t); });
+      t.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+        var n = ts[(i + d + ts.length) % ts.length]; n.focus(); sel(n);
+      });
+    });
+    sel(ts.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0] || ts[0]);
+  }
+  function addr(b) { return b.pref + b.chikuName + b.address + b.cyoume + '-' + b.banchi + '-' + b.gou; }
+  function daysSince(d) { var a = new Date(M.today.replace(/\//g, '-')), b = new Date(d.replace(/\//g, '-')); return Math.round((a - b) / 864e5); }
+  document.addEventListener('DOMContentLoaded', function () {
+    var t = document.getElementById('rfiToggle');
+    if (t) t.addEventListener('change', function () { document.body.classList.toggle('no-rfi', !t.checked); });
+    document.querySelectorAll('.chips').forEach(function (g) {
+      g.addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c && !c.classList.contains('rm')) c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true'); });
+    });
+    document.querySelectorAll('[role=tablist]').forEach(tabs);
+    document.addEventListener('click', function (e) { document.querySelectorAll('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+  });
+  return { M: M, ic: ic, aki: aki, di: di, esc: esc, bind: bind, chips: chips, tabs: tabs, addr: addr, daysSince: daysSince };
+})();
+</script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<!-- Lucide 準拠の線アイコン（24x24 / stroke 2）。絵文字は使わない -->
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol>
+<symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+<symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+<symbol id="i-bookmark-plus" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><path d="M12 7v6"/><path d="M15 10H9"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+<symbol id="i-train" viewBox="0 0 24 24"><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></symbol>
+<symbol id="i-columns" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></symbol>
+<symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+<symbol id="i-sort" viewBox="0 0 24 24"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<!-- フロア状況 6 種（色＋アイコン＋文字の三重表示） -->
+<symbol id="i-aki0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></symbol>
+<symbol id="i-aki1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-aki2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+<symbol id="i-aki3" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 15h6"/></symbol>
+<symbol id="i-aki4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+<symbol id="i-aki5" viewBox="0 0 24 24"><rect width="16" height="10" x="4" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+</svg>
+
+<a class="skip" href="#main">本文へスキップ</a>
+<div class="ribbon" role="region" aria-label="提案用ナビゲーション（製品UIではありません）">
+  <span class="stamp">提案用イメージ</span><span class="opt">Option 2　UI刷新</span>
+  <nav class="flow" aria-label="業務フロー 物件出し〜提案送付"><a href="adm-073.html"><b>1</b>顧客設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-030.html"><b>2</b>物件一覧</a><span class="sep" aria-hidden="true">›</span><a href="adm-012.html"><b>3</b>ビル詳細</a><span class="sep" aria-hidden="true">›</span><a href="adm-096.html"><b>4</b>レポート ビル設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-086.html" aria-current="page"><b>5</b>レポートリスト</a></nav>
+  <div class="rt">
+    <label><input type="checkbox" id="rfiToggle" checked> RFI注記を表示</label>
+    <a href="../index.html#screens/086/option1" target="_top">Option 1 で見る</a>
+    <a href="../index.html#about" target="_top">モック一覧</a>
+    <span class="fict">データはすべて架空です</span>
+  </div>
+</div>
+<div class="app">
+  <aside class="side" aria-label="グローバルメニュー">
+    <div class="brand"><span class="mk"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg></span><div><b>貸事務所ドットコム</b><small>管理システム</small></div></div>
+    <nav data-item="030-01" aria-label="グローバルメニュー"><div class="grp">営業</div><ul><li><a href="#" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-dash"/></svg>ダッシュボード</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>物件</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>顧客</a></li></ul><div class="grp">Webコンテンツ</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg>特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg>エリア特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-trend"/></svg>相場</a></li></ul><div class="grp">管理</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-key"/></svg>オーナー</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-train"/></svg>路線</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-db"/></svg>マスター</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg>スタッフ</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>ログ</a></li></ul></nav>
+    <p class="perm">表示メニューは権限により変わります（現行仕様どおり）。</p>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <ol class="crumb" aria-label="パンくず"><li>ダッシュボード</li><li><a href="adm-073.html">顧客 [100245]</a></li><li aria-current="page">レポートリスト</li></ol>
+      <div class="user" data-item="030-02"><span class="avatar" aria-hidden="true">佐</span><span>ログイン中：<b id="loginName"></b> さん</span></div>
+    </header>
+    <main id="main" class="content">
+
+<div class="page-h">
+  <div class="ttl">
+    <div class="row"><h1 data-item="086-02">レポートリスト</h1><span class="rfi" title="提案時点の物件情報スナップショット・閲覧状況の連携（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI M-08</span></div>
+    <div class="sub" data-item="086-01">[<span data-bind="C.no"></span>] <span data-bind="C.comName"></span> 様向け　紹介／案内レポート</div>
+  </div>
+  <div class="acts">
+    <a class="btn" href="adm-073.html"><svg class="i" aria-hidden="true"><use href="#i-history"/></svg>顧客の履歴を見る</a>
+  </div>
+</div>
+
+<div class="sumrow">
+  <span id="sum" class="row"></span>
+  <label class="switch ml-auto" data-item="086-03"><input type="checkbox" id="showDel"><span class="tr" aria-hidden="true"></span>削除したものを表示</label>
+</div>
+
+<div class="tbl-wrap">
+  <table class="tbl rl">
+    <thead><tr>
+      <th>状態</th><th class="r" data-item="086-06">No</th><th data-item="086-07">種別</th><th data-item="086-09">タイトル／公開URL</th><th data-item="086-08">発行日時</th>
+      <th class="r" data-item="086-10">棟数</th><th class="r" data-item="086-11">管理外</th><th class="r" data-item="086-12">物件数</th><th data-item="086-13">閲覧期限</th><th data-item="086-14">顧客閲覧</th><th class="r" data-item="086-05">操作</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<div class="steps" aria-label="送付の流れ"><span><b>1</b>「公開」でURLを有効化</span><svg class="i i-s" aria-hidden="true"><use href="#i-right"/></svg><span><b>2</b>URLをメール等でお客様へ送付</span><svg class="i i-s" aria-hidden="true"><use href="#i-right"/></svg><span><b>3</b>お客様が開くと「顧客閲覧」に日時を表示</span><span class="ml-auto">公開・非公開は顧客の行動履歴に自動記録されます</span></div>
+
+<details class="pattern"><summary><svg class="i i-s" aria-hidden="true"><use href="#i-info"/></svg>表示パターン（読み込み中）</summary>
+  <div class="box" data-item="086-04"><p class="row" style="margin:0 0 8px"><svg class="i i-s" aria-hidden="true"><use href="#i-loader"/></svg>レポートを読み込み中です。しばらくお待ちください。</p><div class="skel"><span style="width:90%"></span><span style="width:70%"></span><span style="width:80%"></span></div></div>
+</details>
+
+<div class="modal-bg" id="dlg" hidden data-item="086-21">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+    <div class="mh"><h2 id="dlgT"></h2></div>
+    <div class="mb" id="dlgB"></div>
+    <div class="mf"><button class="btn" type="button" id="dlgNo">キャンセル</button><button class="btn btn-p" type="button" id="dlgYes"></button></div>
+  </div>
+</div>
+    </main>
+  </div>
+</div>
+<script>
+document.getElementById('loginName').textContent = UI.M.staff.sakura;
+(function () {
+  var M = UI.M, C = M.customer, ic = UI.ic, esc = UI.esc;
+  UI.bind({ C: C });
+  var rows = M.reports.slice();
+  rows.push({ no: 2650, type: '紹介', dt: '2026/04/10 10:00', title: '（削除済の例）', bcnt: 2, ocnt: 0, fcnt: 3, limit: '2026/07/09 00:00', remain: '', viewed: '', status: 'deleted', hash: 'p6q7r8s9t0' });
+  var ST = { published: ['公開中', 'green', 'globe'], unpublished: ['未公開', 'amber', 'eye-off'], expired: ['期限切れ', 'gray', 'clock'], deleted: ['削除済', 'gray', 'trash'] };
+  var seen = {};
+  function btn(kind, r, cls, label, icon) {
+    var item = ''; if (!seen[kind]) { seen[kind] = 1; item = ' data-item="' + { pub: '086-16', unpub: '086-17', del: '086-18', rest: '086-19' }[kind] + '"'; }
+    if (kind === 'del') return '<button class="ib dg" type="button" title="削除" aria-label="No.' + r.no + ' を削除" data-act="del" data-no="' + r.no + '"' + item + '>' + ic(icon) + '</button>';
+    return '<button class="btn btn-sm ' + cls + '" type="button" data-act="' + kind + '" data-no="' + r.no + '"' + item + '>' + ic(icon, 'i-s') + label + '</button>';
+  }
+  function ops(r) {
+    if (r.status === 'deleted') return btn('rest', r, '', '復元', 'undo');
+    var a = r.status === 'unpublished' ? btn('pub', r, 'btn-cta', '公開', 'send') : btn('unpub', r, '', '非公開', 'eye-off');
+    return a + btn('del', r, 'btn-ghost btn-dg', '削除', 'trash');
+  }
+  function render() {
+    seen = {};
+    var show = document.getElementById('showDel').checked, urlDone = false, xDone = false;
+    document.getElementById('rows').innerHTML = rows.map(function (r) {
+      var st = ST[r.status], x = r.status === 'expired' || r.status === 'deleted';
+      var rem = parseInt((r.remain.match(/\d+/) || ['0'])[0], 10);
+      var lim = '<span class="num">' + r.limit.slice(0, 10) + '</span>' + (r.remain ? '<div class="small" style="color:var(--ok)">' + r.remain + '</div><div class="bar" aria-hidden="true"><span style="width:' + Math.round(rem / 90 * 100) + '%"></span></div>' : '<div class="small">期限切れ</div>');
+      var view = r.viewed ? '<span class="pill green">' + ic('eye') + '閲覧済</span><div class="small num mt8">' + r.viewed + '</div>' : '<span class="pill">未閲覧</span>';
+      var url = '<div class="url mono"' + (urlDone ? '' : ' data-item="086-15"') + '>' + ic('link', 'i-s') + M.reportBaseUrl + r.hash + '/</div>'; urlDone = true;
+      var xi = r.status === 'expired' && !xDone ? ' data-item="086-20"' : ''; if (xi) xDone = true;
+      return '<tr class="' + (x ? 'x' : '') + '"' + xi + (r.status === 'deleted' && !show ? ' hidden' : '') + '><td><span class="pill ' + st[1] + '">' + ic(st[2]) + st[0] + '</span></td><td class="r num">' + r.no + '</td><td><span class="pill ' + (r.type === '案内' ? 'blue' : '') + '">' + r.type + '</span></td>' +
+        '<td class="ttl"><a href="adm-096.html" title="レポート ビル設定を開く">' + esc(r.title) + '</a><br>' + url + '</td><td class="num nw">' + r.dt + '</td>' +
+        '<td class="r num">' + r.bcnt + '</td><td class="r num">' + r.ocnt + '</td><td class="r num">' + r.fcnt + '</td><td class="nw">' + lim + '</td><td class="nw">' + view + '</td><td><div class="ops">' + ops(r) + '</div></td></tr>';
+    }).join('');
+  }
+  var cnt = { published: 0, unpublished: 0, expired: 0 };
+  rows.forEach(function (r) { if (cnt[r.status] != null) cnt[r.status]++; });
+  document.getElementById('sum').innerHTML = ['published', 'unpublished', 'expired'].map(function (k) { return '<span class="pill ' + ST[k][1] + '">' + ic(ST[k][2]) + ST[k][0] + ' ' + cnt[k] + '</span>'; }).join('');
+  document.getElementById('showDel').addEventListener('change', render);
+  render();
+
+  var MSG = {
+    pub: ['レポートを公開しますか？', 'お客様がURLから閲覧できるようになります。公開すると顧客の行動履歴に自動で記録されます。', '公開する'],
+    unpub: ['レポートを非公開にしますか？', 'URLからの閲覧ができなくなります。', '非公開にする'],
+    del: ['レポートを削除しますか？', '「削除したものを表示」から復元できます。', '削除する'],
+    rest: ['レポートを復元しますか？', '削除前の状態に戻します。', '復元する']
+  };
+  var dlg = document.getElementById('dlg'), last;
+  document.getElementById('rows').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]'); if (!b) return; last = b;
+    var m = MSG[b.getAttribute('data-act')];
+    document.getElementById('dlgT').textContent = m[0] + '（No.' + b.getAttribute('data-no') + '）';
+    document.getElementById('dlgB').textContent = m[1];
+    document.getElementById('dlgYes').textContent = m[2];
+    dlg.hidden = false; document.getElementById('dlgNo').focus();
+  });
+  function close() { dlg.hidden = true; if (last) last.focus(); }
+  document.getElementById('dlgNo').onclick = close; document.getElementById('dlgYes').onclick = close;
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !dlg.hidden) close(); });
+})();
+</script>
+</body>
+</html>

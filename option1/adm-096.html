@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-096 レポート ビル設定｜Option 1 現行UI踏襲（提案用イメージ）</title>
+<style>
+/* ===== Option 1 共通ベース（font のみ読みやすいシステムフォントへ変更） ===== */
+* { box-sizing: border-box; }
+body { margin: 0; background: #e9e9e9; color: #333; font: 13px/1.5 -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
+.canvas { width: 1440px; min-height: 100vh; margin: 0 auto; background: #fff; }
+.proposal-bar { display: flex; align-items: center; gap: 14px; height: 34px; padding: 0 14px; background: #fff8d6; border-bottom: 1px solid #e0c96b; font-size: 12px; }
+.proposal-bar .stamp { padding: 1px 8px; border: 1px solid #8a5a00; color: #8a5a00; font-weight: bold; }
+.proposal-bar a { color: #336699; }
+.proposal-bar a.cur { color: #000; font-weight: bold; text-decoration: none; }
+.proposal-bar .sp { margin-left: auto; color: #8a5a00; }
+.proposal-bar .sw button { height: 22px; padding: 0 8px; border: 1px solid #8a5a00; background: #fff; color: #8a5a00; cursor: pointer; font: inherit; }
+.proposal-bar .sw button.on { background: #8a5a00; color: #fff; }
+table { border-collapse: collapse; }
+input.f, select.f, textarea.f { height: 22px; padding: 1px 3px; border: 1px solid #ccc; background: #fff; font: inherit; color: #333; }
+.backdrop { padding: 30px 0 40px; background: #9a9a9a; }
+.dialog { margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.dialog .titlebar { display: flex; justify-content: space-between; padding: 3px 10px; background: #ddd; font-weight: bold; }
+.note-inline { color: #888; font-size: 11px; }
+/* ===== 画面固有（report/css/buil_list.css：営業ダッシュボード系の濃色テーマ） ===== */
+.page { position: relative; background: #fff; }
+header { position: relative; padding: 10px; background: #1b1e24; color: #fff; }
+header th { padding: 5px; font-weight: normal; font-size: 12px; color: #fff; white-space: nowrap; }
+header td { padding: 0 5px; font-size: 12px; color: #fff; }
+header #back { position: absolute; top: 10px; right: 10px; }
+header #back a { color: #fff; }
+.btn2 { height: auto; padding: 3px 8px; background: #1caf9a; border: 0; border-radius: 2px; color: #fff; cursor: pointer; font: inherit; font-size: 12px; white-space: nowrap; }
+.btn2:hover { background: #5cd2c1; }
+.btn2.delete { background: #900; }
+.btn2:disabled { background: #ccc; color: #666; cursor: default; }
+.btn2 .i { display: inline-block; min-width: 12px; margin-right: 3px; font-weight: bold; }
+.toolbar { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+main { padding: 0 0 10px; }
+.buil { position: relative; min-height: 140px; margin: 20px 5px 5px; border-top: 1px solid #ccc; font-size: 12px; }
+.buil:first-child { margin-top: 0; }
+.buil .ctrl { margin-bottom: 2px; padding: 4px; background: #33414e; color: #fff; }
+.buil .ctrl table td { padding-right: 5px; vertical-align: top; }
+.buil .ctrl .comment { display: block; min-height: 18px; color: #fff; }
+.buil .ctrl textarea { width: 640px; height: 44px; }
+.buil .ctrl .btn2 { padding: 3px 6px; }
+.buil .nairan { float: right; margin: 2px 0 2px 15px; color: #fff; }
+.buil .nairan span { margin-left: 10px; }
+.frame { overflow: hidden; }
+.frame .img { float: left; margin-right: 4px; }
+.frame .img .ph { width: 60px; height: 80px; background: repeating-linear-gradient(45deg,#d9d9d9,#d9d9d9 6px,#ececec 6px,#ececec 12px); border: 1px solid #bbb; }
+.builinfo { float: left; margin-right: 10px; }
+.builinfo table { border-collapse: separate; }
+.builinfo th { padding: 1px 4px; background: #ececec; font-weight: normal; color: #444; }
+.builinfo td { padding: 1px 4px; }
+.builinfo .name { margin-left: 5px; font-weight: bold; }
+.mapno { display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: #e05c8a; color: #fff; font-size: 10px; text-align: center; line-height: 16px; }
+.access { float: left; margin-right: 10px; }
+.access td { padding: 1px 4px; }
+.detail { float: left; }
+.detail th { padding: 1px 4px; text-align: left; font-weight: normal; }
+.detail td { padding: 1px 4px; }
+.biko { clear: both; }
+.biko th { padding-right: 10px; font-weight: normal; text-align: left; }
+.bukken { margin: 4px 5px 20px; }
+table.report { width: 100%; border: 0; }
+table.report th { padding: 2px 5px; background: #fff; border: 1px solid #ccc; font-size: 11px; font-weight: normal; }
+table.report td { padding: 4px 5px; background: #fff; border: 1px solid #ccc; text-align: center; font-size: 11px; }
+table.report td.l { text-align: left; }
+.foot-note { margin: 0 5px; padding: 6px; border-top: 1px solid #ccc; font-size: 11px; display: flex; gap: 40px; }
+.foot-note ul { margin: 0; padding-left: 0; list-style: none; }
+.guide-only { display: none; }
+body.guide .guide-only { display: inline; }
+body.guide .presen-only { display: none; }
+</style>
+<script src="../shared/mock-data.js"></script>
+</head>
+<body>
+<div class="canvas">
+
+<div class="proposal-bar">
+  <span class="stamp">提案用イメージ</span>
+  <span>Option 1 現行UI踏襲</span>
+  <span>業務フロー:</span>
+  <a href="adm-073.html">1 顧客設定</a> →
+  <a href="adm-030.html">2 物件一覧</a> →
+  <a href="adm-012.html">3 ビル詳細</a> →
+  <a class="cur" href="adm-096.html">4 レポート ビル設定</a> →
+  <a href="adm-086.html">5 レポートリスト</a>
+  <span class="sw">表示切替（モック操作）: <button id="swP" class="on">紹介レポート</button><button id="swG">案内レポート</button></span>
+  <span class="sp">データはすべて架空です</span>
+</div>
+
+<!-- 現行: 物件一覧「一時保存の編集」ダイアログ内で遷移、または レポートリスト(ADM-086) のタイトルから遷移 -->
+<div class="backdrop">
+<div class="dialog" style="width:1100px">
+  <div class="titlebar"><span>一時保存物件の管理 <span class="note-inline">（呼出元ダイアログのタイトル。レポートリストから開いた場合は「…様向け 紹介レポートリスト」）</span></span><span>×</span></div>
+  <div class="page">
+  <header>
+    <div id="back" data-item="096-01"><a href="adm-086.html">一覧に戻る</a></div>
+    <table style="margin-bottom:5px"><tr>
+      <th data-item="096-02">タイトル</th><td><input class="f" style="width:300px" id="title"></td>
+      <th data-item="096-03">発行日</th><td><input class="f" style="width:90px" id="date"></td>
+      <th data-item="096-04">発行時刻</th><td><input class="f" style="width:60px;text-align:center" id="time"></td>
+      <th data-item="096-05">営業担当</th><td id="staff"></td>
+      <th data-item="096-06">仲介手数料</th><td><label><input type="checkbox" checked> 表示</label></td>
+      <th data-item="096-07">管理外物件</th><td><input class="f" style="width:40px" id="others"> 棟</td>
+      <td><button class="btn2" data-item="096-08"><span class="i">S</span>保存</button></td>
+    </tr></table>
+    <div class="toolbar">
+      <span class="presen-only" data-item="096-09">案内：<select class="f"><option>新規作成</option><option>10/14 内覧予定ビル（神田・日本橋）</option></select></span>
+      <button class="btn2 presen-only" disabled data-item="096-10"><span class="i">+</span>選択物件を案内に複製</button>
+      <button class="btn2" data-item="096-11"><span class="i">+</span>ビル追加</button>
+      <button class="btn2 delete" disabled data-item="096-12"><span class="i">×</span>選択物件の削除</button>
+      <button class="btn2" data-item="096-13"><span class="i">M</span>地図連携</button>
+      <button class="btn2" data-item="096-14"><span class="i">W</span>プレビュー</button>
+      <button class="btn2" data-item="096-15"><span class="i">P</span>客分</button>
+      <button class="btn2" data-item="096-16"><span class="i">P</span>控え</button>
+      <button class="btn2" data-item="096-17"><span class="i">=</span>比較表</button>
+    </div>
+  </header>
+  <main>
+    <section id="list"></section>
+    <div class="foot-note" data-item="096-60">
+      <ul><li>※取引態様：媒介</li><li>※保証金/敷金以外の費用については別途消費税が必要になります。</li></ul>
+      <ul><li>※各物件により、別途費用が必要な場合には、物件紹介時又は重要事項説明においてご説明いたします。</li><li>※ご成約の際は、仲介手数料として賃料の１ヶ月分を申し受けます。</li></ul>
+    </div>
+  </main>
+  </div>
+</div>
+<p style="width:1100px;margin:8px auto 0;color:#fff;font-size:12px">次の操作 → 保存後「一覧に戻る」で <a style="color:#fff" href="adm-086.html">レポートリスト</a> から公開・URL送付</p>
+</div>
+</div><!-- /canvas -->
+
+<script>
+(function () {
+  var M = window.MOCK, R = M.report;
+  function set(id, v) { var el = document.getElementById(id); if (el.tagName === 'INPUT') el.value = v; else el.textContent = v; }
+  set('title', R.title); set('date', R.date); set('time', R.time); set('staff', R.staff); set('others', R.others);
+  function di(first, id) { return first ? ' data-item="' + id + '"' : ''; }
+
+  function block(code, idx) {
+    var b = M.findBuilding(code), first = idx === 0, k = b.kozo, s = b.spec, g = R.guide[code] || {};
+    var cm = R.comments[code] || '';
+    var addr = b.pref + b.chikuName + b.address + b.cyoume + '-' + b.banchi + '-' + b.gou;
+    var eki = '<table>' + b.stations.map(function (e) { return '<tr><td>' + e.rosen + '</td><td>' + e.eki + '駅</td><td>徒歩' + e.tm + '分</td></tr>'; }).join('') + '</table>';
+    var con = [b.contract.teiki + (b.contract.teikiMemo ? ' ' + b.contract.teikiMemo : '')];
+    if (b.contract.hosho) con.push('保証会社' + b.contract.hosho);
+    var floors = (R.floors[code] || []).map(function (no, j) {
+      var f = M.findFloor(no), ff = first && j === 0;
+      return '<tr><td rowspan="2"' + di(ff, '096-43') + '><input type="checkbox"></td><td' + di(ff, '096-44') + '>' + f.kai + '<br>' + M.AKI[f.aki] + '</td><td>' + f.type + '</td><td>' + f.yoto.join('') + '</td>' +
+        '<td>' + f.tsubo.toFixed(2) + '坪<br>' + f.gn + '</td><td>' + f.hosho + '</td><td>' + f.reikin + '</td><td>' + M.yen(f.feeTotal) + '円<br>(@' + M.yen(f.feePer) + ')</td><td>' + M.yen(f.pubTotal) + '円<br>(@' + M.yen(f.pubPer) + ')</td>' +
+        '<td>' + f.koshin + '</td><td>' + f.shokyaku + '</td><td>' + f.nyukyo + '</td><td>' + f.aircon + '</td><td>' + f.floorSpec + '</td><td>' + f.toilet + '</td><td>' + f.height + '</td></tr>' +
+        '<tr><td colspan="2"' + di(ff, '096-59') + '>' + (f.name || '&nbsp;') + '</td><td class="l" colspan="13">' + (f.memo || '') + '</td></tr>';
+    }).join('');
+    return '<div class="buil">' +
+      '<div class="ctrl"><span class="nairan guide-only"' + di(first, '096-22') + '>案内：<span>✎</span><span>' + (g.nairan || '') + '</span><span>' + (g.koho || '　') + '</span></span>' +
+        '<table><tr><td><input type="checkbox"' + di(first, '096-18') + '></td><td><span' + di(first, '096-19') + ' title="印刷">P</span></td>' +
+        '<td><button class="btn2 cmt"' + di(first, '096-20') + ' type="button"><span class="i">✎</span>コメント編集</button></td>' +
+        '<td><span class="comment"' + di(first, '096-21') + '>' + cm + '</span></td></tr></table></div>' +
+      '<div class="frame"><div class="img"><div class="ph"' + di(first, '096-23') + '></div></div>' +
+        '<div class="builinfo"><table>' +
+          '<tr><td colspan="6"' + di(first, '096-24') + '><span class="mapno">' + (idx + 1) + '</span> [' + b.code + ']<span class="name">' + b.name + '</span></td></tr>' +
+          '<tr><th' + di(first, '096-25') + '>住所</th><td colspan="5">' + addr + '</td></tr>' +
+          '<tr><th' + di(first, '096-26') + '>竣工</th><td>' + k.completion + '</td><th' + di(first, '096-27') + '>改修</th><td>' + (k.renewal || '') + '</td><th' + di(first, '096-28') + '>階建</th><td>' + k.ground + 'F' + (k.underground ? '(地下 ' + k.underground + 'F)' : '') + '</td></tr>' +
+          '<tr><th' + di(first, '096-29') + '>構造</th><td>' + k.architect + '</td><th' + di(first, '096-30') + '>耐震</th><td colspan="3">' + k.taishin1 + ' ' + (k.taishin2 || '') + '</td></tr>' +
+        '</table></div>' +
+        '<div class="access"' + di(first, '096-31') + '>' + eki + '</div>' +
+        '<div class="detail"><table>' +
+          '<tr><th' + di(first, '096-32') + '>EV</th><td>: ' + s.ev + '</td><th' + di(first, '096-33') + '>P</th><td colspan="3">: ' + s.p + (s.pTotal ? '(' + s.pTotal + '台)' : '') + '</td></tr>' +
+          '<tr><th' + di(first, '096-34') + '>ｾｷｭﾘﾃｨ</th><td>: ' + s.security + '</td><th' + di(first, '096-35') + '>光</th><td>: ' + s.hikari + '</td><th' + di(first, '096-36') + '>貸会</th><td>: ' + (s.kashiKai ? '有' : '無') + '</td><th' + di(first, '096-37') + '>貸倉</th><td>: ' + (s.kashiSou ? '有' : '無') + '</td></tr>' +
+          '<tr><th' + di(first, '096-38') + '>基準階</th><td>: ' + k.baseFloor.toFixed(2) + '坪</td></tr>' +
+          '<tr><th' + di(first, '096-39') + '>使用時間</th><td colspan="7">: ' + (s.usetimeMemo || s.usetime) + '</td></tr>' +
+          '<tr><th' + di(first, '096-40') + '>ｴﾝﾄﾗﾝｽ</th><td colspan="7">: ' + s.entrance + '</td></tr>' +
+        '</table></div></div>' +
+      '<div class="biko"><table><tr><th' + di(first, '096-41') + '>備考</th><td>' + b.biko.external + '</td></tr><tr><th' + di(first, '096-42') + '>契約</th><td>' + con.join('、') + '</td></tr></table></div>' +
+      '<div class="bukken"><table class="report"><tr>' +
+        [['', ''], ['階', ''], ['種別', '096-45'], ['用', '096-46'], ['面積', '096-47'], ['敷金/保証金', '096-48'], ['礼金', '096-49'], ['賃料', '096-50'], ['共益費', '096-51'],
+         ['更新料/<br>再契約料', '096-52'], ['償却', '096-53'], ['入居日', '096-54'], ['空調', '096-55'], ['床仕様', '096-56'], ['トイレ', '096-57'], ['天高', '096-58']]
+          .map(function (h) { return '<th' + (h[1] ? di(first, h[1]) : '') + '>' + h[0] + '</th>'; }).join('') + '</tr>' +
+        floors + '</table></div>' +
+    '</div>';
+  }
+  document.getElementById('list').innerHTML = R.builCodes.map(block).join('');
+
+  // コメント編集 → テキストエリア＋「コメント保存」に切替（現行 buil_list.js と同じ挙動のイメージ）
+  document.getElementById('list').addEventListener('click', function (e) {
+    var b = e.target.closest('.cmt'); if (!b) return;
+    var sp = b.closest('tr').querySelector('.comment');
+    if (b.dataset.mode !== 'edit') { b.dataset.mode = 'edit'; b.innerHTML = '<span class="i">S</span>コメント保存'; sp.innerHTML = '<textarea maxlength="445">' + sp.textContent + '</textarea>'; }
+    else { b.dataset.mode = ''; b.innerHTML = '<span class="i">✎</span>コメント編集'; sp.textContent = sp.querySelector('textarea').value; }
+  });
+  function mode(g) { document.body.classList.toggle('guide', g); document.getElementById('swG').classList.toggle('on', g); document.getElementById('swP').classList.toggle('on', !g); }
+  document.getElementById('swP').onclick = function () { mode(false); };
+  document.getElementById('swG').onclick = function () { mode(true); };
+})();
+</script>
+</body>
+</html>

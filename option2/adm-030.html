@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-030 物件一覧｜Option 2 UI刷新（提案用イメージ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ==== Option 2 共通（design-system.md と同期。5画面で同一ブロック） ==== */
+:root {
+  --primary: #2563EB; --primary-h: #1D4ED8; --primary-50: #EFF6FF; --primary-100: #DBEAFE;
+  --secondary: #3B82F6;
+  --bg: #F8FAFC; --surface: #FFFFFF; --surface-2: #F1F5F9;
+  --text: #1E293B; --muted: #475569; --subtle: #64748B;
+  --border: #E2E8F0; --border-s: #CBD5E1;
+  --cta: #F97316; --cta-h: #FB923C; --cta-ink: #431407;
+  --danger: #B91C1C; --danger-50: #FEF2F2;
+  --ok: #166534; --ok-50: #DCFCE7;
+  --rfi: #6D28D9; --rfi-50: #F5F3FF; --rfi-b: #A78BFA;
+  --a0: #166534; --a0b: #DCFCE7;  /* 空 */
+  --a1: #115E59; --a1b: #CCFBF1;  /* 未解約 */
+  --a2: #92400E; --a2b: #FEF3C7;  /* 先行有 */
+  --a3: #9F1239; --a3b: #FFE4E6;  /* 申込有 */
+  --a4: #5B21B6; --a4b: #EDE9FE;  /* 内定有 */
+  --a5: #334155; --a5b: #E2E8F0;  /* 済 */
+  --r: 6px; --r-s: 4px;
+  --sh: 0 1px 2px rgba(15,23,42,.06), 0 1px 3px rgba(15,23,42,.08);
+  --sh-l: 0 8px 24px rgba(15,23,42,.16);
+  --t: 180ms ease;
+  --side: 208px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 1440px; background: var(--bg); color: var(--text);
+  font: 400 13px/1.55 "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif;
+  -webkit-font-smoothing: antialiased; }
+.num, .tbl td.r, .kv dd.num, input.num { font-variant-numeric: tabular-nums; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.35; }
+h1 { font-size: 20px; font-weight: 700; }
+h2 { font-size: 15px; font-weight: 700; }
+h3 { font-size: 13px; font-weight: 700; }
+a { color: var(--primary); text-decoration: none; transition: color var(--t); }
+a:hover { color: var(--primary-h); text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--primary-h); outline-offset: 2px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+.i-s { width: 14px; height: 14px; }
+.i-l { width: 20px; height: 20px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 0; z-index: 99; padding: 8px 12px; background: var(--surface); }
+.skip:focus { left: 8px; top: 8px; }
+
+/* ---- 提案用リボン（製品UIではない） ---- */
+.ribbon { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 16px; background: #0F172A; color: #E2E8F0; font-size: 12px; }
+.ribbon .stamp { padding: 2px 10px; border-radius: 3px; background: var(--cta); color: var(--cta-ink); font-weight: 700; letter-spacing: .04em; }
+.ribbon .opt { font-weight: 700; color: #fff; }
+.ribbon .flow { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
+.ribbon .flow a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; color: #CBD5E1; }
+.ribbon .flow a b { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #334155; color: #fff; font-size: 11px; }
+.ribbon .flow a:hover { background: #1E293B; color: #fff; text-decoration: none; }
+.ribbon .flow a[aria-current] { background: #fff; color: #0F172A; font-weight: 700; }
+.ribbon .flow a[aria-current] b { background: var(--primary); }
+.ribbon .flow .sep { color: #64748B; }
+.ribbon .rt { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.ribbon .rt a { color: #BFDBFE; }
+.ribbon label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.ribbon .fict { color: #94A3B8; }
+
+/* ---- アプリシェル ---- */
+.app { display: grid; grid-template-columns: var(--side) 1fr; min-height: calc(100vh - 40px); }
+.side { position: sticky; top: 40px; height: calc(100vh - 40px); overflow-y: auto; background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; }
+.brand { display: flex; align-items: center; gap: 8px; padding: 2px 8px 14px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.brand .mk { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: var(--primary); color: #fff; }
+.brand b { display: block; font-size: 13px; }
+.brand small { display: block; color: var(--subtle); font-size: 11px; }
+.side .grp { margin: 12px 8px 4px; color: var(--subtle); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.side ul { margin: 0; padding: 0; list-style: none; }
+.side a { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: var(--r-s); color: var(--muted); font-weight: 500; transition: background var(--t), color var(--t); }
+.side a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.side a[aria-current] { background: var(--primary-50); color: var(--primary-h); box-shadow: inset 3px 0 0 var(--primary); }
+.side .perm { margin: 14px 8px 0; color: var(--subtle); font-size: 11px; line-height: 1.5; }
+.main { min-width: 0; }
+.top { position: sticky; top: 40px; z-index: 40; display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--border); }
+.crumb { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; color: var(--muted); font-size: 12px; }
+.crumb li + li::before { content: "/"; margin-right: 6px; color: var(--border-s); }
+.crumb [aria-current] { color: var(--text); font-weight: 500; }
+.user { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 12px; }
+.avatar { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary-100); color: var(--primary-h); font-weight: 700; font-size: 12px; }
+.content { padding: 20px 24px 96px; }
+
+/* ---- 汎用部品 ---- */
+.page-h { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.page-h .ttl { flex: 1; min-width: 0; }
+.page-h .sub { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.page-h .acts { display: flex; gap: 8px; align-items: center; }
+.row { display: flex; align-items: center; gap: 8px; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.ml-auto { margin-left: auto; }
+.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; }
+.muted { color: var(--muted); } .small { font-size: 12px; } .xs { font-size: 11px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); }
+.card-h { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.card-b { padding: 16px; }
+.card + .card { margin-top: 16px; }
+.sec-t { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; font-size: 13px; font-weight: 700; color: var(--text); }
+.sec-t:first-child { margin-top: 0; }
+.sec-t::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid var(--border-s); border-radius: var(--r-s);
+  background: var(--surface); color: var(--text); font: inherit; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t), box-shadow var(--t); }
+.btn:hover { background: var(--surface-2); border-color: #94A3B8; text-decoration: none; color: var(--text); }
+.btn:active { transform: translateY(1px); }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.btn-p { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-p:hover { background: var(--primary-h); border-color: var(--primary-h); color: #fff; }
+.btn-cta { background: var(--cta); border-color: #EA580C; color: var(--cta-ink); font-weight: 700; }
+.btn-cta:hover { background: var(--cta-h); border-color: #EA580C; color: var(--cta-ink); box-shadow: 0 2px 8px rgba(249,115,22,.35); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); border-color: transparent; }
+.btn-dg { color: var(--danger); }
+.btn-dg:hover { background: var(--danger-50); border-color: #FCA5A5; color: var(--danger); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.ib { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: var(--r-s); background: transparent; color: var(--muted); cursor: pointer; transition: background var(--t), color var(--t); }
+.ib:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
+.ib.dg:hover { background: var(--danger-50); color: var(--danger); }
+.ib-sm { width: 28px; height: 28px; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > label, .field > .lb { color: var(--muted); font-size: 12px; font-weight: 500; }
+.field .help { color: var(--subtle); font-size: 11px; }
+.field .err { display: flex; align-items: center; gap: 4px; color: var(--danger); font-size: 12px; }
+.inp, select.inp, textarea.inp { width: 100%; height: 34px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: var(--r-s); background: var(--surface); color: var(--text); font: inherit; transition: border-color var(--t), box-shadow var(--t); }
+textarea.inp { height: auto; min-height: 64px; padding: 8px 10px; line-height: 1.55; resize: vertical; }
+.inp:hover { border-color: #94A3B8; }
+.inp:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.25); }
+.inp[readonly] { background: var(--surface-2); color: var(--muted); }
+.inp.is-err { border-color: var(--danger); }
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+.g3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+.g6 { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 12px; }
+.span2 { grid-column: span 2; } .span3 { grid-column: span 3; } .span4 { grid-column: span 4; } .full { grid-column: 1 / -1; }
+.ck { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; }
+.ck input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+
+/* チップ（トグル選択） */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 10px; border: 1px solid var(--border-s); border-radius: 14px; background: var(--surface); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; transition: background var(--t), border-color var(--t), color var(--t); }
+.chip:hover { border-color: var(--secondary); color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--primary-50); border-color: var(--primary); color: var(--primary-h); font-weight: 500; }
+.chip[aria-pressed="true"]::before { content: ""; width: 10px; height: 6px; margin: -3px 2px 0 0; border: solid currentColor; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.chip.rm { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+
+/* ピル（状態表示） */
+.pill { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 12px; font-weight: 500; white-space: nowrap; background: var(--surface-2); color: var(--muted); }
+.pill .i { width: 13px; height: 13px; }
+.pill.blue { background: var(--primary-100); color: #1E40AF; }
+.pill.green { background: var(--ok-50); color: var(--ok); }
+.pill.gray { background: var(--a5b); color: var(--a5); }
+.pill.red { background: var(--danger-50); color: var(--danger); }
+.pill.amber { background: var(--a2b); color: var(--a2); }
+.aki { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px 0 6px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.aki .i { width: 13px; height: 13px; stroke-width: 2.4; }
+.aki-0 { background: var(--a0b); color: var(--a0); } .aki-1 { background: var(--a1b); color: var(--a1); } .aki-2 { background: var(--a2b); color: var(--a2); }
+.aki-3 { background: var(--a3b); color: var(--a3); } .aki-4 { background: var(--a4b); color: var(--a4); } .aki-5 { background: var(--a5b); color: var(--a5); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+
+/* RFI 注記バッジ（機能は未実装・配置予定のみ） */
+.rfi { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border: 1px dashed var(--rfi-b); border-radius: 10px; background: var(--rfi-50); color: var(--rfi); font-size: 11px; font-weight: 500; white-space: nowrap; cursor: help; vertical-align: middle; }
+.rfi .i { width: 12px; height: 12px; }
+body.no-rfi .rfi { display: none; }
+
+/* キー・値 */
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin: 0; }
+.kv dt { color: var(--muted); font-size: 12px; }
+.kv dd { margin: 0; min-width: 0; }
+.kv-g { display: grid; gap: 1px; margin: 0; background: var(--border); border: 1px solid var(--border); border-radius: var(--r-s); overflow: hidden; }
+.kv-g > div { padding: 6px 10px; background: var(--surface); }
+.kv-g dt { color: var(--muted); font-size: 11px; }
+.kv-g dd { margin: 0; font-weight: 500; }
+
+/* テーブル */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-s); background: var(--surface); }
+.tbl-wrap:focus-visible { outline-offset: -2px; }
+.tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.tbl th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: var(--surface-2); border-bottom: 1px solid var(--border-s); color: var(--muted); font-weight: 500; text-align: left; white-space: nowrap; }
+.tbl td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.tbl tbody tr { transition: background var(--t); }
+.tbl tbody tr:hover > td { background: #F8FAFC; }
+.tbl tr:last-child > td { border-bottom: 0; }
+.tbl .r { text-align: right; } .tbl .c { text-align: center; }
+.tbl th.r { text-align: right; }
+.tbl .nw { white-space: nowrap; }
+.tbl .sel { width: 36px; text-align: center; }
+.tbl tr.done > td { background: #F8FAFC; color: var(--muted); }
+.tbl .grp-h { background: #EEF2F7; color: var(--text); font-weight: 700; }
+.tbl .stk { position: sticky; left: 0; z-index: 2; background: inherit; }
+.sub-l { display: block; color: var(--subtle); font-size: 11px; }
+
+/* タブ */
+.tabs { display: flex; gap: 2px; padding: 0 12px; border-bottom: 1px solid var(--border); }
+.tab { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; cursor: pointer; transition: color var(--t); }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--primary-h); font-weight: 700; }
+.tab[aria-selected="true"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--primary); }
+.tab .cnt { min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--surface-2); color: var(--muted); font-size: 11px; line-height: 18px; text-align: center; }
+.tab .was { color: var(--subtle); font-size: 11px; font-weight: 400; }
+.panel { padding: 16px; }
+.panel[hidden] { display: none; }
+
+/* ドロップダウン（details） */
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu .pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 200px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh-l); }
+.menu .pop a, .menu .pop button { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: var(--r-s); background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.menu .pop a:hover, .menu .pop button:hover { background: var(--surface-2); text-decoration: none; }
+.menu .pop .hd { padding: 6px 10px 2px; color: var(--subtle); font-size: 11px; }
+
+/* 統計タイル */
+.stats { display: grid; gap: 12px; }
+.stat { padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--sh); min-width: 0; }
+.stat .lb { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.stat .v { margin-top: 4px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat .v small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.stat .n { margin-top: 2px; color: var(--subtle); font-size: 11px; }
+
+/* 空状態・表示パターン */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px; color: var(--muted); text-align: center; }
+.empty .i { width: 28px; height: 28px; color: var(--subtle); }
+details.pattern { margin-top: 12px; color: var(--muted); font-size: 12px; }
+details.pattern > summary { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+details.pattern .box { margin-top: 8px; padding: 12px; border: 1px dashed var(--border-s); border-radius: var(--r); background: var(--surface); }
+
+/* 一括操作バー / 固定フッター */
+.bulk { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #BFDBFE; border-radius: var(--r); background: var(--primary-50); }
+.bulk .cnt { font-weight: 700; color: var(--primary-h); }
+.dock { position: fixed; left: var(--side); right: 0; bottom: 0; z-index: 45; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 24px; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 16px rgba(15,23,42,.08); }
+.thumb { display: grid; place-items: center; background: repeating-linear-gradient(135deg, #E2E8F0 0 8px, #F1F5F9 8px 16px); border-radius: var(--r-s); color: var(--subtle); }
+.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: 12px; }
+.modal-bg { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; background: rgba(15,23,42,.45); }
+.modal-bg[hidden] { display: none; }
+.modal { width: 440px; background: var(--surface); border-radius: 8px; box-shadow: var(--sh-l); }
+.modal .mh { padding: 16px 20px 0; }
+.modal .mb { padding: 10px 20px 16px; color: var(--muted); }
+.modal .mf { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); }
+
+/* ==== 画面固有 ==== */
+.search .card-b { display: grid; gap: 14px; }
+.sgrid { display: grid; grid-template-columns: 1.6fr 1.1fr 1.5fr; gap: 16px; align-items: end; }
+.inp-ic { position: relative; }
+.inp-ic .i { position: absolute; left: 10px; top: 9px; color: var(--subtle); }
+.inp-ic .inp { padding-left: 32px; }
+.akichips { display: flex; flex-wrap: wrap; gap: 6px; }
+.akichips button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 8px; border: 1px solid var(--border-s); border-radius: 15px; background: var(--surface); color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; transition: border-color var(--t), background var(--t); }
+.akichips button .box { display: grid; place-items: center; width: 16px; height: 16px; border: 1.5px solid var(--border-s); border-radius: 3px; background: var(--surface); }
+.akichips button[aria-pressed="true"] .box { border-color: var(--primary); background: var(--primary); }
+.akichips button[aria-pressed="true"] .box::after { content: ""; width: 8px; height: 4px; margin-top: -2px; border: solid #fff; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+.akichips button:hover { border-color: var(--secondary); }
+.akichips .aki { height: 20px; }
+.addc .chip { border-style: dashed; }
+.applied { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--border); background: var(--surface-2); border-radius: 0 0 var(--r) var(--r); }
+.applied .chip.rm { height: 26px; }
+.resbar { display: flex; align-items: center; gap: 12px; margin: 20px 0 10px; }
+.pager { display: flex; align-items: center; gap: 4px; }
+.pager .cur { display: inline-grid; place-items: center; min-width: 32px; height: 32px; border-radius: var(--r-s); background: var(--primary); color: #fff; font-weight: 700; }
+.toc { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.bcard { margin-top: 16px; scroll-margin-top: 100px; }
+.bh { display: grid; grid-template-columns: 80px minmax(0,1fr) auto auto; gap: 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.bh .thumb { width: 80px; height: 60px; }
+.bname { font-size: 16px; font-weight: 700; color: var(--text); }
+.code { padding: 1px 6px; border-radius: 3px; background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 500; }
+.conf { padding: 6px 12px; border-left: 1px solid var(--border); }
+.conf .d { font-size: 14px; font-weight: 700; }
+.fresh { color: var(--ok); font-size: 11px; font-weight: 500; }
+.bacts { display: flex; gap: 2px; padding-left: 12px; border-left: 1px solid var(--border); }
+.bacts .ib { width: auto; min-width: 32px; padding: 0 6px; gap: 4px; font-size: 12px; display: inline-flex; align-items: center; }
+.tagl { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border: 1px solid var(--border-s); border-radius: 3px; color: var(--muted); font-size: 11px; }
+.tagl.on { border-color: #93C5FD; background: var(--primary-50); color: #1E40AF; font-weight: 500; }
+.bb { display: grid; grid-template-columns: 280px minmax(0,1fr); gap: 0; border-bottom: 1px solid var(--border); }
+.bb > div { padding: 12px 16px; }
+.bb > div + div { border-left: 1px solid var(--border); }
+.bb h3 { margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 500; }
+.eki { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.eki li { display: flex; gap: 6px; align-items: center; }
+.eki .m { margin-left: auto; font-weight: 700; white-space: nowrap; }
+.own { width: 100%; border-collapse: collapse; font-size: 12px; }
+.own td { padding: 4px 6px; border-bottom: 1px dashed var(--border); white-space: nowrap; }
+.own td.wr { white-space: normal; min-width: 160px; }
+.own tr:last-child td { border-bottom: 0; }
+.own .pri-on { color: var(--primary-h); font-weight: 700; }
+.spec { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.spec span { white-space: nowrap; }
+.spec b { margin-right: 4px; color: var(--muted); font-weight: 500; }
+.biko { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border); }
+.biko > div { padding: 10px 16px; }
+.biko > div + div { border-left: 1px solid var(--border); }
+.biko .h { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; font-size: 12px; font-weight: 700; }
+.biko .scope { font-weight: 400; color: var(--muted); font-size: 11px; }
+.biko .in { color: #9A3412; } .biko .out { color: #1E40AF; }
+.ft { border: 0; border-radius: 0 0 var(--r) var(--r); }
+.ft td { background: var(--surface); }
+.ft tr.done td { background: #F8FAFC; color: var(--muted); }
+.ft .stk1 { position: sticky; left: 0; z-index: 2; }
+.ft .stk2 { position: sticky; left: 36px; z-index: 2; }
+.ft .stk3 { position: sticky; left: 76px; z-index: 2; }
+.ft .stk4 { position: sticky; left: 172px; z-index: 2; box-shadow: 1px 0 0 var(--border); }
+.ft th.stk1, .ft th.stk2, .ft th.stk3, .ft th.stk4 { z-index: 3; }
+.ft .grp-r td { border-top: 2px solid var(--border-s); }
+.price { font-weight: 700; }
+.bm { color: var(--subtle); }
+.bm[aria-pressed="true"] { color: var(--primary-h); }
+.bm[aria-pressed="true"] svg { fill: currentColor; }
+.ft tr.det td { background: #FBFCFE; padding-top: 0; font-size: 12px; }
+.det-g { display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 8px 0 4px 76px; }
+.det-g b { margin-right: 4px; color: var(--muted); font-weight: 500; }
+.memo { display: block; margin-top: 2px; color: #9A3412; font-size: 11px; }
+.yo { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 2px; border-radius: 3px; background: var(--surface-2); color: var(--subtle); font-size: 11px; }
+.yo.on { background: #1E293B; color: #fff; }
+.dock .tray { display: flex; align-items: center; gap: 10px; }
+.dock .tray .v { font-size: 16px; font-weight: 700; }
+</style>
+<script src="../shared/mock-data.js"></script>
+<script>
+/* ==== Option 2 共通 JS（5画面で同一ブロック） ==== */
+var UI = (function () {
+  var M = window.MOCK;
+  var AKI_ICON = ['aki0', 'aki1', 'aki2', 'aki3', 'aki4', 'aki5'];
+  function ic(name, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>'; }
+  function aki(i, item) { return '<span class="aki aki-' + i + '"' + (item ? ' data-item="' + item + '"' : '') + '>' + ic(AKI_ICON[i]) + M.AKI[i] + '</span>'; }
+  function di(on, id) { return on ? ' data-item="' + id + '"' : ''; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function get(ctx, path) { return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, ctx); }
+  /* data-bind="C.comName" に MOCK の値を流し込む（data-fmt: yen / f2） */
+  function bind(ctx, root) {
+    (root || document).querySelectorAll('[data-bind]').forEach(function (el) {
+      var v = get(ctx, el.getAttribute('data-bind')), f = el.getAttribute('data-fmt');
+      if (v == null) v = '';
+      if (f === 'yen' && v !== '') v = M.yen(v);
+      if (f === 'f2' && v !== '') v = Number(v).toFixed(2);
+      if (el.type === 'checkbox') { el.checked = !!v; return; }
+      if (el.tagName === 'SELECT') { el.innerHTML = '<option>' + esc(v) + '</option>'; return; }
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v; else el.textContent = v;
+    });
+  }
+  /* チップ群（マスタ由来ラベルは仮） */
+  function chips(el, all, on, item) {
+    el.innerHTML = all.map(function (l) { return '<button type="button" class="chip" aria-pressed="' + (on.indexOf(l) >= 0) + '">' + esc(l) + '</button>'; }).join('');
+    if (item) el.setAttribute('data-item', item);
+  }
+  /* タブ（キーボード ←→ 対応） */
+  function tabs(list) {
+    var ts = Array.prototype.slice.call(list.querySelectorAll('[role=tab]'));
+    function sel(t) {
+      ts.forEach(function (x) { var on = x === t; x.setAttribute('aria-selected', on); x.tabIndex = on ? 0 : -1; document.getElementById(x.getAttribute('aria-controls')).hidden = !on; });
+    }
+    ts.forEach(function (t, i) {
+      t.addEventListener('click', function () { sel(t); });
+      t.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
+        var n = ts[(i + d + ts.length) % ts.length]; n.focus(); sel(n);
+      });
+    });
+    sel(ts.filter(function (t) { return t.getAttribute('aria-selected') === 'true'; })[0] || ts[0]);
+  }
+  function addr(b) { return b.pref + b.chikuName + b.address + b.cyoume + '-' + b.banchi + '-' + b.gou; }
+  function daysSince(d) { var a = new Date(M.today.replace(/\//g, '-')), b = new Date(d.replace(/\//g, '-')); return Math.round((a - b) / 864e5); }
+  document.addEventListener('DOMContentLoaded', function () {
+    var t = document.getElementById('rfiToggle');
+    if (t) t.addEventListener('change', function () { document.body.classList.toggle('no-rfi', !t.checked); });
+    document.querySelectorAll('.chips').forEach(function (g) {
+      g.addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c && !c.classList.contains('rm')) c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true'); });
+    });
+    document.querySelectorAll('[role=tablist]').forEach(tabs);
+    document.addEventListener('click', function (e) { document.querySelectorAll('details.menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.open = false; }); });
+  });
+  return { M: M, ic: ic, aki: aki, di: di, esc: esc, bind: bind, chips: chips, tabs: tabs, addr: addr, daysSince: daysSince };
+})();
+</script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<!-- Lucide 準拠の線アイコン（24x24 / stroke 2）。絵文字は使わない -->
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol>
+<symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-dash" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></symbol>
+<symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></symbol>
+<symbol id="i-bookmark-plus" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><path d="M12 7v6"/><path d="M15 10H9"/></symbol>
+<symbol id="i-undo" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+<symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+<symbol id="i-train" viewBox="0 0 24 24"><path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/></symbol>
+<symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></symbol>
+<symbol id="i-columns" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></symbol>
+<symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+<symbol id="i-sort" viewBox="0 0 24 24"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<!-- フロア状況 6 種（色＋アイコン＋文字の三重表示） -->
+<symbol id="i-aki0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></symbol>
+<symbol id="i-aki1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-aki2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></symbol>
+<symbol id="i-aki3" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 15h6"/></symbol>
+<symbol id="i-aki4" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+<symbol id="i-aki5" viewBox="0 0 24 24"><rect width="16" height="10" x="4" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+</svg>
+
+<a class="skip" href="#main">本文へスキップ</a>
+<div class="ribbon" role="region" aria-label="提案用ナビゲーション（製品UIではありません）">
+  <span class="stamp">提案用イメージ</span><span class="opt">Option 2　UI刷新</span>
+  <nav class="flow" aria-label="業務フロー 物件出し〜提案送付"><a href="adm-073.html"><b>1</b>顧客設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-030.html" aria-current="page"><b>2</b>物件一覧</a><span class="sep" aria-hidden="true">›</span><a href="adm-012.html"><b>3</b>ビル詳細</a><span class="sep" aria-hidden="true">›</span><a href="adm-096.html"><b>4</b>レポート ビル設定</a><span class="sep" aria-hidden="true">›</span><a href="adm-086.html"><b>5</b>レポートリスト</a></nav>
+  <div class="rt">
+    <label><input type="checkbox" id="rfiToggle" checked> RFI注記を表示</label>
+    <a href="../index.html#screens/030/option1" target="_top">Option 1 で見る</a>
+    <a href="../index.html#about" target="_top">モック一覧</a>
+    <span class="fict">データはすべて架空です</span>
+  </div>
+</div>
+<div class="app">
+  <aside class="side" aria-label="グローバルメニュー">
+    <div class="brand"><span class="mk"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg></span><div><b>貸事務所ドットコム</b><small>管理システム</small></div></div>
+    <nav data-item="030-01" aria-label="グローバルメニュー"><div class="grp">営業</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-dash"/></svg>ダッシュボード</a></li><li><a href="#" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>物件</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>顧客</a></li></ul><div class="grp">Webコンテンツ</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg>特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg>エリア特集</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-trend"/></svg>相場</a></li></ul><div class="grp">管理</div><ul><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-key"/></svg>オーナー</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-train"/></svg>路線</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-db"/></svg>マスター</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg>スタッフ</a></li><li><a href="#"><svg class="i" aria-hidden="true"><use href="#i-list"/></svg>ログ</a></li></ul></nav>
+    <p class="perm">表示メニューは権限により変わります（現行仕様どおり）。</p>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <ol class="crumb" aria-label="パンくず"><li>物件</li><li aria-current="page">物件一覧</li></ol>
+      <div class="user" data-item="030-02"><span class="avatar" aria-hidden="true">佐</span><span>ログイン中：<b id="loginName"></b> さん</span></div>
+    </header>
+    <main id="main" class="content">
+
+<div class="page-h">
+  <div class="ttl">
+    <h1>物件一覧</h1>
+    <div class="sub">お客様のニーズに合うビルを検索し、フロアを一時保存してレポートを作成します。</div>
+  </div>
+  <div class="acts">
+    <span class="rfi" title="一覧・検索まわりの追加要件（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-09・P-12</span>
+    <button class="btn" type="button" data-item="030-11"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>新規ビル作成</button>
+    <details class="menu">
+      <summary class="btn"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>写真UP<svg class="i i-s" aria-hidden="true"><use href="#i-down"/></svg></summary>
+      <div class="pop"><button type="button" data-item="030-15"><svg class="i" aria-hidden="true"><use href="#i-building"/></svg>外観</button><button type="button" data-item="030-16"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg>物件詳細</button></div>
+    </details>
+    <details class="menu">
+      <summary class="btn"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg>管理<svg class="i i-s" aria-hidden="true"><use href="#i-down"/></svg></summary>
+      <div class="pop"><div class="hd">物件権限「フル」のみ表示</div>
+        <button type="button" data-item="030-12"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>汎用ﾁｪｯｸ</button>
+        <button type="button" data-item="030-13"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>ダウンロード</button>
+        <button type="button" data-item="030-14"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>連携用DL</button></div>
+    </details>
+  </div>
+</div>
+
+<!-- 検索：よく使う条件を1段目、追加条件・汎用チェックは折りたたみ -->
+<section class="card search" aria-label="検索条件">
+  <div class="card-b">
+    <div class="sgrid">
+      <div class="field" data-item="030-31">
+        <label for="q">ビル名／住所 <span class="rfi" title="社内備考を含む全文検索（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI P-13</span></label>
+        <div class="inp-ic"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input class="inp" id="q" value="神田"></div>
+      </div>
+      <div class="field">
+        <label for="no">物件番号</label>
+        <div class="row"><input class="inp num" id="no" data-item="030-29" placeholder="例）17,234,67890"><label class="ck" style="white-space:nowrap" data-item="030-30"><input type="checkbox">入力順</label></div>
+        <span class="help">カンマ区切りで複数指定できます</span>
+      </div>
+      <div class="field" data-item="030-24">
+        <label for="fav">お気に入り（保存した条件）<span class="rfi" title="条件一致の再マッチング・通知（配置予定）"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg>RFI M-01</span></label>
+        <div class="row"><select class="inp" id="fav"><option>株式会社サンプル商事様 神田30-45坪</option></select>
+          <button class="ib" type="button" title="お気に入りに追加" aria-label="お気に入りに追加" data-item="030-25"><svg class="i" aria-hidden="true"><use href="#i-bookmark-plus"/></svg></button>
+          <button class="ib" type="button" title="お気に入り編集" aria-label="お気に入り編集" data-item="030-26"><svg class="i" aria-hidden="true"><use href="#i-pencil"/></svg></button></div>
+        <span class="help">&nbsp;</span>
+      </div>
+    </div>
+    <div class="row wrap" style="gap:16px">
+      <div class="field" data-item="030-28"><span class="lb">フロア状況</span><div class="akichips" id="akiChk"></div></div>
+      <button class="btn btn-p ml-auto" type="button" data-item="030-32" style="align-self:flex-end;min-width:120px"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg>検索</button>
+    </div>
+    <div class="row wrap" style="gap:16px">
+      <div class="field"><span class="lb">条件を追加（各種検索）</span>
+        <div class="chips addc">
+          <button type="button" class="chip" data-item="030-17"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>地区</button>
+          <button type="button" class="chip" data-item="030-18"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>路線</button>
+          <button type="button" class="chip" data-item="030-19"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>特徴</button>
+          <button type="button" class="chip" data-item="030-20"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>オーナー</button>
+          <button type="button" class="chip" data-item="030-21"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>顧客</button>
+          <button type="button" class="chip" data-item="030-22"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>チェック</button>
+          <button type="button" class="chip" data-item="030-23"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>詳細</button>
+        </div>
+      </div>
+      <label class="ck ml-auto" style="align-self:flex-end" data-item="030-27"><input type="checkbox">一時保存の表示</label>
+    </div>
+    <details class="pattern" style="margin-top:0">
+      <summary><svg class="i i-s" aria-hidden="true"><use href="#i-filter"/></svg>汎用チェック条件（ラベルはマスタ設定値・モックは仮）</summary>
+      <div class="box">
+        <div class="chips" id="builChkCond"></div>
+        <div class="row mt12" data-item="030-34">
+          <select class="inp" style="width:140px" aria-label="チェック／非チェック"><option>チェック</option><option>非チェック</option></select>
+          <label class="ck"><input type="radio" name="ao" checked>AND</label><label class="ck"><input type="radio" name="ao">OR</label>
+        </div>
+      </div>
+    </details>
+  </div>
+  <div class="applied" data-item="030-35">
+    <span class="small muted nw">適用中の条件</span>
+    <div class="chips grow" id="applied"></div>
+    <button class="btn btn-ghost btn-sm" type="button"><svg class="i i-s" aria-hidden="true"><use href="#i-x"/></svg>条件をクリア</button>
+  </div>
+</section>
+
+<div class="resbar">
+  <h2 data-item="030-36"><span class="num" id="resCnt"></span><span class="muted small" style="font-weight:400;margin-left:8px">棟中 1〜<span id="resTo"></span>棟を表示</span></h2>
+  <div class="legend ml-auto" id="legend" aria-label="フロア状況の凡例"></div>
+  <nav class="pager" aria-label="ページ送り"><button class="ib" type="button" aria-label="前のページ" disabled><svg class="i" aria-hidden="true"><use href="#i-left"/></svg></button><span class="cur" aria-current="page">1</span><button class="ib" type="button" aria-label="次のページ" disabled><svg class="i" aria-hidden="true"><use href="#i-right"/></svg></button></nav>
+</div>
+<nav class="toc" data-item="030-37" aria-label="このページのビル"><span class="small muted">このページには</span><span id="toc" class="chips"></span></nav>
+
+<div class="bulk" id="bulk">
+  <span class="cnt" id="selCnt">0件選択中</span>
+  <span class="small muted">選択したフロアを印刷</span>
+  <label class="sr" for="atena">宛名</label><input class="inp" id="atena" style="width:220px;height:30px" placeholder="宛名（例：〇〇株式会社 様）" data-item="030-07">
+  <button class="btn btn-sm" type="button" data-item="030-08"><svg class="i i-s" aria-hidden="true"><use href="#i-map"/></svg>地図</button>
+  <button class="btn btn-sm" type="button" data-item="030-09"><svg class="i i-s" aria-hidden="true"><use href="#i-printer"/></svg>客分</button>
+  <button class="btn btn-sm" type="button" data-item="030-10"><svg class="i i-s" aria-hidden="true"><use href="#i-printer"/></svg>控え</button>
+  <span class="small muted ml-auto"><svg class="i i-s" aria-hidden="true"><use href="#i-bookmark"/></svg> の切替で一時保存（レポート候補）に追加</span>
+</div>
+
+<div id="list"></div>
+<details class="pattern"><summary><svg class="i i-s" aria-hidden="true"><use href="#i-info"/></svg>表示パターン（0件）</summary>
+  <div class="box"><div class="empty" data-item="030-111"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><b>条件に一致するビルはありません</b><span class="small">フロア状況や追加条件をゆるめて再検索してください。</span></div></div>
+</details>
+
+<!-- 一時保存トレイ：次の工程（レポート作成）への入口を常に画面下に -->
+<div class="dock" role="region" aria-label="一時保存">
+  <div class="tray" data-item="030-03"><svg class="i i-l" aria-hidden="true"><use href="#i-inbox"/></svg><span class="small muted">一時保存</span><span class="v num" id="trayB"></span><span class="small">棟</span><span class="v num" id="trayF"></span><span class="small">件</span></div>
+  <button class="btn btn-sm" type="button" data-item="030-05"><svg class="i i-s" aria-hidden="true"><use href="#i-plus"/></svg>結果の追加</button>
+  <button class="btn btn-sm btn-ghost" type="button" data-item="030-06"><svg class="i i-s" aria-hidden="true"><use href="#i-x"/></svg>結果のクリア</button>
+  <span class="small muted ml-auto">顧客・タイトル・種別を設定してレポートを作成します</span>
+  <a class="btn btn-cta" href="adm-096.html" data-item="030-04"><svg class="i" aria-hidden="true"><use href="#i-file"/></svg>一時保存を編集してレポート作成<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+</div>
+    </main>
+  </div>
+</div>
+<script>
+document.getElementById('loginName').textContent = UI.M.staff.sakura;
+(function () {
+  var M = UI.M, ic = UI.ic, esc = UI.esc, di = UI.di;
+  var on = ['空', '未解約', '先行有', '申込有', '内定有'];
+  document.getElementById('akiChk').innerHTML = M.AKI.map(function (a, i) {
+    return '<button type="button" aria-pressed="' + (on.indexOf(a) >= 0) + '"><span class="box" aria-hidden="true"></span>' + UI.aki(i) + '</button>';
+  }).join('');
+  document.getElementById('akiChk').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); });
+  var BCHK = ['図面有', 'パンフ有', '謄本有', '外観有', '詳細写真有', 'チェック6', 'チェック7', 'チェック8', 'チェック9', 'チェック10', 'チェック11', 'チェック12', 'チェック13', 'チェック14', 'チェック15', 'チェック16', 'チェック17', 'チェック18', 'チェック19'];
+  UI.chips(document.getElementById('builChkCond'), BCHK, [], '030-33');
+  document.getElementById('applied').innerHTML = ['お気に入り：株式会社サンプル商事様 神田30-45坪', '空き：空・未解約・先行有・申込有・内定有', '地区：千代田区・中央区', '坪数：30〜45坪', '賃料：〜20,000円/坪']
+    .map(function (t) { return '<span class="chip rm">' + esc(t) + '<button class="ib ib-sm" style="width:20px;height:20px" type="button" aria-label="条件を外す：' + esc(t) + '">' + ic('x', 'i-s') + '</button></span>'; }).join('');
+  document.getElementById('legend').innerHTML = M.AKI.map(function (a, i) { return UI.aki(i); }).join('');
+  document.getElementById('resCnt').textContent = M.buildings.length;
+  document.getElementById('resTo').textContent = M.buildings.length;
+  document.getElementById('toc').innerHTML = M.buildings.map(function (b) { return '<a class="chip" href="#b' + b.code + '">' + esc(b.name) + '</a>'; }).join('');
+
+  // 一時保存の初期状態 = レポート（工程4）に入るフロア
+  var saved = {}; Object.keys(M.report.floors).forEach(function (k) { M.report.floors[k].forEach(function (n) { saved[n] = true; }); });
+  var BCH = ['図面有', 'パンフ有', '謄本有', '外観有', '詳細写真有'];
+
+  function floorRows(b, f, first, open) {
+    var a = f.aki, done = a === 5, dash = '<span class="muted">-</span>';
+    var yoto = ['事', '店', '倉', 'マ'].map(function (y, i) { return '<span class="yo' + (f.yoto.indexOf(y) >= 0 ? ' on' : '') + '"' + (f.yoto.indexOf(y) >= 0 ? '' : ' aria-hidden="true"') + '>' + y + '</span>'; }).join('');
+    var fa = M.yen(f.feePer + f.pubPer);
+    var row = '<tr class="' + (done ? 'done ' : '') + '">' +
+      '<td class="sel stk1"><input type="checkbox" class="fsel" aria-label="' + f.kai + ' を選択"' + (b.code === '010231' && f.aki < 2 ? ' checked' : '') + '></td>' +
+      '<td class="c stk2"' + di(first, '030-101') + '><button class="ib ib-sm bm" type="button" aria-pressed="' + !!saved[f.no] + '" title="一時保存" aria-label="' + f.kai + ' を一時保存">' + ic('bookmark') + '</button></td>' +
+      '<td class="stk3"' + di(first, '030-99') + '>' + UI.aki(a) + '</td>' +
+      '<td class="stk4 nw"><span' + di(first, '030-82') + '><a href="#" onclick="return false" title="フロア詳細（別画面）"><b>' + f.kai + '</b> ' + ic('pencil', 'i-s') + '</a></span>' +
+        ' <span class="muted"' + di(first, '030-83') + '>' + esc(f.name) + '</span>' + (f.memo ? '<span class="memo"' + di(first, '030-110') + '>' + ic('msg', 'i-s') + ' ' + esc(f.memo) + '</span>' : (first ? '<span class="memo" data-item="030-110"></span>' : '')) + '</td>' +
+      '<td class="nw"' + di(first, '030-84') + '>' + f.type + '</td>' +
+      '<td class="r nw num"' + di(first, '030-85') + '><b>' + f.tsubo.toFixed(2) + '</b>坪 <span class="pill" style="height:18px;padding:0 5px">' + f.gn + '</span><span class="sub-l">' + f.metor.toFixed(2) + '㎡</span></td>' +
+      '<td class="r nw num"' + di(first, '030-88') + '><span class="price">' + M.yen(f.feeTotal) + '</span><span class="sub-l">@' + M.yen(f.feePer) + '</span></td>' +
+      '<td class="r nw num"' + di(first, '030-89') + '>' + M.yen(f.pubTotal) + '<span class="sub-l">@' + M.yen(f.pubPer) + '</span></td>' +
+      '<td class="nw"' + di(first, '030-92') + '><b>' + f.nyukyo + '</b></td>' +
+      '<td class="nw"' + di(first, '030-86') + '>' + f.hosho + '</td><td class="nw"' + di(first, '030-87') + '>' + f.reikin + '</td>' +
+      '<td class="nw"' + di(first, '030-90') + '>' + f.koshin + '</td><td class="nw"' + di(first, '030-91') + '>' + f.shokyaku + '</td>' +
+      '<td class="nw"' + di(first, '030-98') + '>' + yoto + '</td>' +
+      '<td class="r nw num"' + di(first, '030-93') + '>' + fa + '<span class="sub-l">' + f.akiDate.slice(5) + '</span></td><td class="c"' + di(first, '030-94') + '>' + dash + '</td><td class="c"' + di(first, '030-95') + '>' + dash + '</td>' +
+      '<td class="nw"' + di(first, '030-96') + '>' + esc(f.staff) + '<span class="sub-l num">' + f.akiDate + '</span></td>' +
+      '<td' + di(first, '030-97') + '><a href="#" onclick="return false" class="pill blue">' + ic('file') + '図面</a></td>' +
+      '<td class="c"' + di(first, '030-102') + '>' + (b.status === 'WEB表示' ? '<span title="WEB掲載中" aria-label="WEB掲載中" style="color:var(--primary)">' + ic('globe') + '</span>' : dash) + '</td>' +
+      '<td class="num muted nw"' + di(first, '030-100') + '>' + f.no + '</td>' +
+      '<td class="c"><button class="ib ib-sm tg" type="button" aria-expanded="' + open + '" aria-label="' + f.kai + ' の詳細" title="詳細">' + ic(open ? 'down' : 'right') + '</button></td></tr>';
+    var det = '<tr class="det"' + (open ? '' : ' hidden') + '><td colspan="22"><div class="det-g">' +
+      '<span' + di(first, '030-104') + '><b>設備</b>空調 ' + f.aircon + '／床 ' + f.floorSpec + '／トイレ ' + f.toilet + '／天井高 ' + f.height + '</span>' +
+      '<span' + di(first, '030-105') + '><b>ﾏｲｿｸ</b>' + esc(f.staff) + ' ' + f.akiDate.slice(5) + ' <a href="#" onclick="return false" aria-label="ﾏｲｿｸ編集">' + ic('pencil', 'i-s') + '</a></span>' +
+      '<span' + di(first, '030-106') + '><b>写真・動画メモ</b>-</span><span' + di(first, '030-107') + '><b>コピー区分</b>-</span>' +
+      '<span' + di(first, '030-108') + '><b>区分所有オーナー</b>-</span><span' + di(first, '030-109') + '><b>入居顧客</b>-</span>' +
+      '<button class="btn btn-sm" type="button"' + di(first, '030-103') + '>' + ic('history', 'i-s') + '入居履歴</button></div></td></tr>';
+    return row + det;
+  }
+
+  function block(b, first) {
+    var s = b.spec, k = b.kozo, c = b.contract, d = UI.daysSince(b.checkDate);
+    var counts = [0, 0, 0, 0, 0, 0]; b.floors.forEach(function (f) { counts[f.aki]++; });
+    var sum = counts.map(function (n, i) { return n ? UI.aki(i).replace('</span>', ' ' + n + '</span>') : ''; }).join('');
+    var CON = [c.teiki + (c.teikiMemo ? '：' + c.teikiMemo : '')];
+    if (c.tatekae) CON.push('建替予定 ' + c.tatekae); if (c.tanki) CON.push('短期 ' + c.tanki); if (c.hosho) CON.push('保証契約 ' + c.hosho + (c.hoshoMemo ? '：' + c.hoshoMemo : ''));
+    if (c.genjo) CON.push('原状回復 ' + c.genjo + (c.genjoMemo ? '：' + c.genjoMemo : '')); if (c.completeDoc === '有') CON.push('検査済証 有');
+    var spec = [
+      ['竣工', k.completion + (k.renewal ? '（' + k.renewal + '改修）' : ''), '030-58'], ['階建て', k.ground + 'F' + (k.underground ? '／B' + k.underground + 'F' : '') + '（' + k.architect + '）', '030-59'],
+      ['耐震', k.taishin1 + (k.taishin2 ? '・' + k.taishin2 : ''), '030-60'], ['基準階', k.baseFloor.toFixed(2) + '坪', '030-61'], ['延床', k.sumTsubo.toFixed(2) + '坪', '030-62'],
+      ['EV', s.ev, '030-63'], ['P', s.p === '有' ? '有（' + (s.pTotal || '-') + '台）' : s.p, '030-64'], ['光', s.hikari, '030-65'], ['ｾｷｭﾘﾃｨ', s.security, '030-66'],
+      ['24H使用', s.usetime === '無' ? '制限なし' + (s.usetimeMemo ? '（' + s.usetimeMemo + '）' : '') : '制限あり' + (s.usetimeMemo ? '（' + s.usetimeMemo + '）' : ''), '030-67'],
+      ['ｴﾝﾄﾗﾝｽ', s.entrance + (s.entranceMemo ? '（' + s.entranceMemo + '）' : ''), '030-68'], ['貸会', s.kashiKai ? '有' : '無', '030-69'], ['貸倉', s.kashiSou ? '有' : '無', '030-70'],
+      ['駐輪', s.churin ? '有' : '無', '030-71'], ['自家発電', s.jikaHatuden ? '有' : '無', '030-72'], ['多トイレ', s.multiToilet ? '有' : '無', '030-73'],
+      ['特殊ニーズ', s.specialNeeds + (s.specialNeedsMemo ? '：' + s.specialNeedsMemo : ''), '030-74'], ['契約', CON.join('、'), '030-77']
+    ].map(function (x) { return '<span' + di(first, x[2]) + '><b>' + x[0] + '</b>' + esc(x[1]) + '</span>'; }).join('') +
+      '<span' + di(first, '030-75') + '><b>謄本</b><a href="#" onclick="return false">' + ic('file', 'i-s') + 'PDF</a></span><span' + di(first, '030-76') + '><b>パンフ</b><a href="#" onclick="return false">' + ic('file', 'i-s') + 'PDF</a></span>';
+    var owners = b.owners.map(function (o, i) {
+      return '<tr><td><input type="radio" name="o' + b.code + '" aria-label="問合せ先に設定"' + (o.priority ? ' checked' : '') + '></td><td class="' + (o.priority ? 'pri-on' : '') + '">' + (o.priority ? '問合せ先' : '') + '</td><td class="num">' + o.checkDate + '</td><td><b>' + esc(o.name) + '</b> <span class="muted">' + o.code + '</span></td><td>' + o.bunrui + '・' + o.type + '</td>' +
+        '<td class="num"><a href="#" onclick="return false">' + ic('phone', 'i-s') + ' ' + o.tel + '</a></td><td>' + esc(o.comment) + '</td><td class="muted wr">' + esc(o.biko) + '</td><td>定休 ' + o.holiday + '</td><td>' + esc(o.staff) + '</td><td>' + o.pr + '</td></tr>';
+    }).join('');
+    var tags = BCH.map(function (l) { return b.checks.indexOf(l) >= 0 ? '<span class="tagl on">' + l + '</span>' : ''; }).join('');
+    var floors = b.floors.map(function (f, i) { return floorRows(b, f, first && i === 0, first && i === 0); }).join('');
+    return '<article class="card bcard" id="b' + b.code + '" aria-label="' + esc(b.name) + '">' +
+      '<header class="bh"><div class="thumb"' + di(first, '030-51') + ' role="img" aria-label="外観写真">' + ic('image', 'i-l') + '</div>' +
+        '<div style="min-width:0"><div class="row wrap"><span class="code num"' + di(first, '030-38') + '>' + b.code + '</span>' +
+          '<a class="bname" href="adm-012.html"' + di(first, '030-40') + '>' + esc(b.name) + '</a><a class="ib ib-sm" href="adm-012.html" title="ビル詳細を編集" aria-label="ビル詳細を編集"' + di(first, '030-39') + '>' + ic('pencil') + '</a>' +
+          '<span class="small muted">' + esc(b.kana) + '</span>' + (b.oldName ? '<span class="small muted"' + di(first, '030-41') + '>旧：' + esc(b.oldName) + '</span>' : (first ? '<span data-item="030-41"></span>' : '')) +
+          '<span class="pill ' + (b.status === 'WEB表示' ? 'blue' : 'gray') + '"' + di(first, '030-50') + '>' + ic(b.status === 'WEB表示' ? 'eye' : 'eye-off') + b.status + '</span></div>' +
+          '<div class="row wrap small muted mt8">' + ic('pin', 'i-s') + '<span' + di(first, '030-45') + '>' + UI.addr(b) + '</span>' +
+            '<a class="ib ib-sm" href="#" onclick="return false" title="Google地図" aria-label="Google地図で開く"' + di(first, '030-43') + '>' + ic('ext', 'i-s') + '</a>' +
+            '<button class="ib ib-sm" type="button" title="地図設定" aria-label="地図設定"' + di(first, '030-44') + '>' + ic('map', 'i-s') + '</button>' +
+            '<span class="row"' + di(first, '030-52') + '><span class="tagl' + (b.locate.street ? ' on' : '') + '">大通り</span><span class="tagl' + (b.locate.corner ? ' on' : '') + '">角</span><span class="tagl' + (b.locate.eki ? ' on' : '') + '">駅直結</span></span>' +
+            '<span class="row"' + di(first, '030-57') + '>' + (tags || '<span class="xs">汎用チェックなし</span>') + '</span>' +
+            '<span class="row" style="margin-left:4px">' + sum + '</span></div></div>' +
+        '<div class="conf"><div class="small muted row">最終確認 <span class="rfi" title="確認日からの経過による鮮度管理（配置予定）">' + ic('tag') + 'RFI P-07</span></div>' +
+          '<div' + di(first, '030-46') + '><span class="d num">' + b.checkDate + '</span> <span class="small">' + esc(b.checkStaff) + '</span><div class="fresh">' + ic('clock', 'i-s') + ' ' + (d === 0 ? '本日' : d + '日前') + '</div></div>' +
+          '<button class="btn btn-sm mt8" type="button"' + di(first, '030-47') + '>' + ic('check', 'i-s') + M.today.slice(5) + ' 確認</button></div>' +
+        '<div class="bacts">' +
+          '<button class="ib" type="button" title="内覧" aria-label="内覧"' + di(first, '030-42') + '>' + ic('eye') + '</button>' +
+          '<button class="ib" type="button" title="WEBプレビュー" aria-label="WEBプレビュー"' + di(first, '030-48') + '>' + ic('globe') + '</button>' +
+          '<button class="ib" type="button" title="写真ギャラリー" aria-label="写真ギャラリー ' + b.photos + '枚"' + di(first, '030-49') + '>' + ic('image') + '<span class="num">' + b.photos + '</span></button>' +
+          (first ? '<button class="ib" type="button" title="案内履歴" data-item="030-53">' + ic('history') + '案内</button>' : '') +
+          '<button class="ib" type="button" title="契約履歴"' + di(first, '030-54') + '>' + ic('file') + '契約(' + c.history + ')</button></div></header>' +
+      '<div class="bb"><div' + di(first, '030-55') + '><h3>最寄駅</h3><ul class="eki">' + b.stations.map(function (e) { return '<li>' + ic('train', 'i-s') + esc(e.rosen) + ' ' + esc(e.eki) + '<span class="m num">徒歩' + e.tm + '分</span></li>'; }).join('') + '</ul></div>' +
+        '<div' + di(first, '030-56') + '><h3>連絡先（オーナー）</h3><div style="overflow-x:auto"><table class="own">' + owners + '</table></div></div></div>' +
+      '<div class="spec" aria-label="ビル詳細">' + spec + '</div>' +
+      '<div class="biko"><div' + di(first, '030-78') + '><div class="h in">' + ic('lock', 'i-s') + '営業備考<span class="scope">社内のみ</span></div>' + (esc(b.biko.sales) || '<span class="muted">-</span>') + '</div>' +
+        '<div' + di(first, '030-79') + '><div class="h out">' + ic('globe', 'i-s') + '外部備考<span class="scope">お客様に表示</span></div>' + (esc(b.biko.external) || '<span class="muted">-</span>') + '</div>' +
+        '<div' + di(first, '030-80') + '><div class="h">' + ic('msg', 'i-s') + '依頼<span class="scope">社内依頼</span></div>' + (esc(b.biko.request) || '<span class="muted">-</span>') + '</div></div>' +
+      '<div class="tbl-wrap ft" tabindex="0" aria-label="フロア一覧（横スクロール）"><table class="tbl"><thead><tr>' +
+        '<th class="sel stk1"' + di(first, '030-81') + '><input type="checkbox" class="fall" aria-label="全フロアを選択"></th><th class="stk2 c" title="一時保存">' + ic('bookmark', 'i-s') + '</th><th class="stk3">状況</th><th class="stk4">階・室名</th><th>種別</th><th class="r">坪数</th>' +
+        '<th class="r">賃料</th><th class="r">共益費</th><th>入居</th><th>保証金／敷金</th><th>礼金</th><th>更新料</th><th>償却</th><th>用途</th>' +
+        '<th class="r"><label class="ck"><input type="checkbox">目安</label></th><th><label class="ck"><input type="checkbox">交渉</label></th><th><label class="ck"><input type="checkbox">底値</label></th>' +
+        '<th>更新</th><th>図面</th><th>WEB</th><th>フロア番号</th><th></th></tr></thead><tbody>' + floors + '</tbody></table></div>' +
+    '</article>';
+  }
+  var list = document.getElementById('list');
+  list.innerHTML = M.buildings.map(function (b, i) { return block(b, i === 0); }).join('');
+
+  function refresh() {
+    var n = list.querySelectorAll('.fsel:checked').length;
+    document.getElementById('selCnt').textContent = n + '件選択中';
+    var bs = {}, fc = 0;
+    list.querySelectorAll('.bm[aria-pressed="true"]').forEach(function (b) { fc++; bs[b.closest('article').id] = 1; });
+    document.getElementById('trayB').textContent = Object.keys(bs).length;
+    document.getElementById('trayF').textContent = fc;
+  }
+  list.addEventListener('click', function (e) {
+    var bm = e.target.closest('.bm'); if (bm) { bm.setAttribute('aria-pressed', bm.getAttribute('aria-pressed') !== 'true'); refresh(); }
+    var tg = e.target.closest('.tg'); if (tg) { var open = tg.getAttribute('aria-expanded') !== 'true'; tg.setAttribute('aria-expanded', open); tg.innerHTML = ic(open ? 'down' : 'right'); tg.closest('tr').nextElementSibling.hidden = !open; }
+  });
+  list.addEventListener('change', function (e) {
+    if (e.target.classList.contains('fall')) e.target.closest('table').querySelectorAll('.fsel').forEach(function (c) { c.checked = e.target.checked; });
+    refresh();
+  });
+  refresh();
+})();
+</script>
+</body>
+</html>

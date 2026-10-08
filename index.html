@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>物件出し〜提案送付 管理画面モック｜提案用イメージ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root { --primary: #2563EB; --primary-h: #1D4ED8; --primary-50: #EFF6FF; --bg: #F8FAFC; --text: #1E293B; --muted: #475569; --border: #E2E8F0; --cta: #F97316; --cta-ink: #431407; --rfi: #7C3AED; --t: 180ms ease; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 14px/1.7 "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif; display: flex; flex-direction: column; }
+a { color: var(--primary); }
+:focus-visible { outline: 2px solid var(--primary-h); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.i { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px; }
+.stamp { display: inline-block; padding: 1px 10px; border-radius: 3px; background: var(--cta); color: var(--cta-ink); font-size: 12px; font-weight: 700; }
+/* header + main tabs */
+header { background: #0F172A; color: #E2E8F0; }
+.hbar { display: flex; align-items: center; gap: 16px; max-width: 1440px; margin: 0 auto; padding: 14px 24px 0; }
+.hbar h1 { margin: 0; font-size: 17px; color: #fff; font-weight: 700; }
+.hbar .fake { margin-left: auto; color: #94A3B8; font-size: 12px; }
+.tabs { display: flex; gap: 4px; max-width: 1440px; margin: 0 auto; padding: 12px 24px 0; }
+.tabs [role="tab"] { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 20px; border: 0; border-radius: 6px 6px 0 0; background: transparent; color: #CBD5E1; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: background var(--t), color var(--t); }
+.tabs [role="tab"]:hover { background: #1E293B; color: #fff; }
+.tabs [role="tab"][aria-selected="true"] { background: var(--bg); color: var(--text); font-weight: 700; }
+.tabs .n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #334155; color: #fff; font-size: 11px; }
+.tabs [aria-selected="true"] .n { background: var(--primary); }
+[role="tabpanel"][hidden] { display: none !important; }
+/* tab 1 */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 8px 24px 48px; }
+.lead { margin: 24px 0 8px; font-size: 22px; line-height: 1.5; }
+.callout { display: flex; gap: 12px; margin: 16px 0 8px; padding: 14px 18px; border: 1px solid #FED7AA; border-radius: 8px; background: #FFF7ED; font-size: 13px; }
+.callout ul { margin: 0; padding-left: 18px; }
+h2 { margin: 36px 0 12px; font-size: 18px; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.opt { padding: 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; }
+.opt h3 { margin: 0 0 6px; font-size: 16px; }
+.opt .tag { display: inline-block; margin-bottom: 8px; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+.opt.o1 .tag { background: #F1F5F9; color: #334155; } .opt.o2 .tag { background: var(--primary-50); color: #1E40AF; }
+.opt p { margin: 0 0 8px; }
+.opt dl { display: grid; grid-template-columns: 6em 1fr; gap: 6px 12px; margin: 12px 0 14px; font-size: 13px; }
+.opt dt { color: var(--muted); } .opt dd { margin: 0; }
+table.cmp { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); font-size: 13px; }
+.cmp th, .cmp td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.cmp thead th { background: #F1F5F9; font-weight: 700; }
+.cmp tbody th { width: 22%; color: var(--muted); font-weight: 500; }
+.cmp .tbd { color: var(--muted); font-style: italic; }
+.flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.flow li { display: flex; flex-direction: column; gap: 6px; padding: 16px; background: #fff; border: 1px solid var(--border); border-radius: 8px; }
+.flow .no { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 13px; }
+.flow b { font-size: 15px; } .flow .id { color: var(--muted); font-size: 12px; }
+.flow .role { font-size: 13px; color: var(--muted); }
+.flow details { font-size: 12px; } .flow summary { cursor: pointer; color: var(--primary); font-weight: 500; }
+.flow details ul { margin: 6px 0 0; padding-left: 16px; }
+.flow .btns { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; }
+.rfi { display: inline-block; padding: 0 8px; border: 1px dashed var(--rfi); border-radius: 10px; color: var(--rfi); font-size: 12px; font-weight: 500; }
+.judge { margin: 0; padding-left: 20px; }
+.note { margin-top: 32px; color: var(--muted); font-size: 12px; }
+.btn { display: inline-flex; flex: 1; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 4px; background: #fff; color: var(--text); font: inherit; font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer; transition: background var(--t), border-color var(--t); }
+.btn:hover { background: #F1F5F9; border-color: #94A3B8; }
+.btn.p { background: var(--primary); border-color: var(--primary); color: #fff; } .btn.p:hover { background: var(--primary-h); }
+.btn.big { flex: none; min-height: 42px; padding: 0 20px; font-size: 14px; }
+/* tab 2 */
+#p-screens { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.tool { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--border); }
+.tool .lbl { color: var(--muted); font-size: 12px; }
+.seg { display: inline-flex; border: 1px solid #CBD5E1; border-radius: 4px; overflow: hidden; }
+.seg button { min-height: 36px; padding: 0 14px; border: 0; border-left: 1px solid #CBD5E1; background: #fff; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; transition: background var(--t); }
+.seg button:first-child { border-left: 0; }
+.seg button:hover { background: #F1F5F9; }
+.seg button[aria-pressed="true"] { background: var(--primary); color: #fff; font-weight: 700; }
+.optsw button[data-opt="option1"][aria-pressed="true"] { background: #334155; }
+.tool .desc { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 12px; }
+.tool .right { margin-left: auto; display: flex; gap: 8px; }
+.tool .btn { flex: none; white-space: nowrap; }
+.frame { position: relative; flex: 1; min-height: 480px; overflow: hidden; background: #CBD5E1; }
+.frame iframe { position: absolute; left: 0; top: 0; width: 1440px; border: 0; background: #fff; transform-origin: 0 0; }
+@media (max-width: 900px) { .opts, .flow { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+</svg>
+
+<header>
+  <div class="hbar"><span class="stamp">提案用イメージ</span><h1>物件出し〜提案送付　管理画面モック</h1><span class="fake">表示データはすべて架空です</span></div>
+  <div class="tabs" role="tablist" aria-label="ページ切替">
+    <button type="button" role="tab" id="t-about" aria-controls="p-about" aria-selected="true"><span class="n">1</span>提案用イメージと2つの方針</button>
+    <button type="button" role="tab" id="t-screens" aria-controls="p-screens" aria-selected="false" tabindex="-1"><span class="n">2</span>画面モック</button>
+  </div>
+</header>
+
+<!-- Tab 1 -->
+<section role="tabpanel" id="p-about" aria-labelledby="t-about">
+<div class="wrap">
+  <p class="lead">同じ架空データを使い、2つのUI方針を5画面の業務フローでご覧いただけます。</p>
+  <div class="callout"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg>
+    <ul>
+      <li><b>提案用イメージ</b>：画面の方向性を比較いただくための試作です。最終的なデザイン・仕様は要件定義で確定します。</li>
+      <li>両案とも現行画面の項目・機能 <b>471項目をすべて引き継ぎ</b>ます（1項目ずつ対応を確認済み、削除0件）。違いは画面上の配置と見せ方のみで、機能の追加は含みません。</li>
+      <li>表示している企業名・人名・電話番号・物件はすべて架空です。画面上のボタンは見た目の確認用で、保存等は行いません。</li>
+    </ul>
+  </div>
+
+  <h2>2つの方針</h2>
+  <div class="opts">
+    <section class="opt o1" aria-labelledby="o1h">
+      <span class="tag">Option 1</span><h3 id="o1h">現行UI踏襲</h3>
+      <p>現在の画面構成・タブ・項目の並び・操作の流れをそのまま引き継ぎ、文字の読みやすさと揃え方のみを整えます。</p>
+      <dl><dt>メリット</dt><dd>操作の再習得がほぼ不要で、切替直後から現行どおりに業務を続けられます。</dd>
+        <dt>留意点</dt><dd>画面・タブ・項目が多いという操作性の課題（RFI 課題9）は残ります。</dd></dl>
+      <button type="button" class="btn big" data-go="option1"><svg class="i" aria-hidden="true"><use href="#i-monitor"/></svg>Option 1 の画面を見る</button>
+    </section>
+    <section class="opt o2" aria-labelledby="o2h">
+      <span class="tag">Option 2</span><h3 id="o2h">UI刷新</h3>
+      <p>現行の項目・機能はすべて残したまま、業務の流れに沿って配置を見直します。判断に使う情報（空室状況・確認日・賃料）を先頭に集め、タブを利用頻度でまとめます。</p>
+      <dl><dt>メリット</dt><dd>課題9（操作性）に直接対応し、新任の方でも必要な情報に早くたどり着けます。</dd>
+        <dt>留意点</dt><dd>配置が変わるため、切替時に操作説明・教育が必要です。デザイン・画面実装の工数が増えます。</dd></dl>
+      <button type="button" class="btn big p" data-go="option2"><svg class="i" aria-hidden="true"><use href="#i-monitor"/></svg>Option 2 の画面を見る</button>
+    </section>
+  </div>
+
+  <h2>比較表</h2>
+  <table class="cmp">
+    <thead><tr><th scope="col">観点</th><th scope="col">Option 1　現行UI踏襲</th><th scope="col">Option 2　UI刷新</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">方針</th><td>画面構成・タブ数・項目の並び・ボタン位置を現行どおり維持し、文字の読みやすさと揃えのみ改善</td><td>全項目を維持したまま、業務の流れに沿って配置を再構成。判断に使う情報を先頭に集約</td></tr>
+      <tr><th scope="row">操作習得コスト<br>（RFI 第16章「操作習得」）</th><td>ほぼ不要。現在の操作手順がそのまま使えます</td><td>配置が変わるため、切替時に操作説明会と簡易マニュアルが必要です。業務の流れ自体は変わりません</td></tr>
+      <tr><th scope="row">課題9（管理システムの操作性）への対応度</th><td>低：画面・タブ・項目の多さは現行どおり残ります</td><td>高：タブ統合（ビル詳細 10→7、顧客 5→4）、空室・確認日・賃料を先頭表示、状態の色＋アイコン＋文字表示、一時保存からレポート作成への直行導線</td></tr>
+      <tr><th scope="row">新任者の立ち上がり</th><td>現行と同等</td><td>ラベル・状態表示・公開範囲（社内のみ／お客様に表示）の明示により、迷う箇所を減らします</td></tr>
+      <tr><th scope="row">移行・定着リスク</th><td>低：切替直後の業務停滞が起きにくい</td><td>中：切替直後に一時的な操作の戸惑いが想定されます。並行稼働期間・研修で緩和します</td></tr>
+      <tr><th scope="row">RFI 新規要件の組み込みやすさ</th><td>現行レイアウトに後から追加するため、画面がさらに混み合う可能性があります</td><td>追加予定箇所をあらかじめ確保（モック上の <span class="rfi">RFI ○-○○</span> 注記）</td></tr>
+      <tr><th scope="row">工数差（Designer / FE）</th><td class="tbd">見積確定後に記入</td><td class="tbd">見積確定後に記入</td></tr>
+    </tbody>
+  </table>
+
+  <h2>業務フロー（1 → 5）と画面ごとの変更点</h2>
+  <ol class="flow" id="flow"></ol>
+
+  <h2>注記の見方</h2>
+  <p>Option 2 の紫色の点線バッジ <span class="rfi">RFI ○-○○</span> は、RFI の新規要件を今後配置する予定の場所を示す注記です。本モックでは機能として実装していません。画面上部の「RFI注記を表示」で表示・非表示を切り替えられます。</p>
+
+  <h2>ご判断いただきたい点</h2>
+  <ul class="judge">
+    <li>切替時期の業務負荷を最優先する場合は Option 1、課題9（操作性）と新任者の立ち上がりを重視する場合は Option 2 が適しています。</li>
+    <li>Option 2 を選ぶ場合、並行稼働期間と操作研修の範囲（対象人数・回数）を要件定義で取り決めます。</li>
+    <li>両案の中間（例：ビル詳細のタブ順だけ変更する）も可能です。対象画面と範囲を個別にご相談ください。</li>
+  </ul>
+  <p class="note">※ 本モックは提案用イメージです。最終的なデザイン・仕様は要件定義で確定します。</p>
+</div>
+</section>
+
+<!-- Tab 2 -->
+<section role="tabpanel" id="p-screens" aria-labelledby="t-screens" hidden>
+  <div class="tool">
+    <span class="lbl">画面</span><div class="seg" role="group" aria-label="画面" id="stepSeg"></div>
+    <span class="lbl">方針</span>
+    <div class="seg optsw" role="group" aria-label="方針" id="optSeg">
+      <button type="button" data-opt="option1" aria-pressed="false">Option 1 現行UI踏襲</button>
+      <button type="button" data-opt="option2" aria-pressed="true">Option 2 UI刷新</button>
+    </div>
+    <div class="right">
+      <button type="button" class="btn" id="swap" title="同じ画面のまま方針を切り替えます"><svg class="i" aria-hidden="true"><use href="#i-swap"/></svg>もう一方の案と切替</button>
+      <a class="btn" id="openNew" href="option2/adm-073.html" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-ext"/></svg>新しいタブで開く</a>
+    </div>
+    <p class="desc" id="desc"></p>
+  </div>
+  <div class="frame" id="frame"><iframe id="vf" title="画面モック" src="about:blank"></iframe></div>
+</section>
+
+<script>
+(function () {
+  var STEPS = [
+    ['073', '顧客設定', 'お客様のニーズと営業履歴を確認する', ['進捗・ランク・見込・次のアクションを上段タイルに集約', 'ニーズ要約を常時表示', '5タブ → 4タブ（企業・担当を統合）', '基本情報を左カラムに整理']],
+    ['030', '物件一覧', 'ニーズに合う物件を検索し、候補を一時保存する', ['検索条件を1段に整理、適用中の条件をチップ表示', 'ビル見出しに最終確認日（経過日数）・WEB表示・フロア状況件数', '備考に公開範囲（社内のみ／お客様に表示）を明示', '一時保存トレイからレポート作成へ直行']],
+    ['012', 'ビル詳細', '空室状況・条件・問合せ先を確認する', ['10タブ → 7タブ、フロア一覧を先頭・初期表示に', '概要バンドに所在・確認日・問合せ先・フロア状況・賃料帯', '構造＋設備、WEB＋特徴、写真(営業)＋(運営)を統合', '備考・汎用チェックを常時表示カードに']],
+    ['096', 'レポート ビル設定', '掲載ビルを選び、おすすめポイントを書く', ['掲載ビル一覧を左に固定、コメント未入力を黄色表示', 'おすすめポイントを中央に配置し文字数を表示', '操作ボタンを固定ツールバーに整理']],
+    ['086', 'レポートリスト', 'レポートを公開し、URLを送付・閲覧を確認する', ['状態をアイコン付きで表示、件数サマリー', '公開URL・閲覧期限（残り日数）・閲覧済／未閲覧を1行に', '「公開」は未公開のレポートだけに表示']]
+  ];
+  var OPT = { option1: 'Option 1 現行UI踏襲', option2: 'Option 2 UI刷新' };
+  var cur = { tab: 'about', step: 0, opt: 'option2' };
+
+  document.getElementById('flow').innerHTML = STEPS.map(function (s, i) {
+    return '<li><span class="no">' + (i + 1) + '</span><b>' + s[1] + '</b><span class="id">ADM-' + s[0] + '</span><span class="role">' + s[2] + '</span>' +
+      '<details><summary>Option 2 の主な変更点</summary><ul>' + s[3].map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></details>' +
+      '<div class="btns"><button type="button" class="btn" data-step="' + i + '" data-go="option1">Option 1</button><button type="button" class="btn p" data-step="' + i + '" data-go="option2">Option 2</button></div></li>';
+  }).join('');
+  var stepSeg = document.getElementById('stepSeg');
+  stepSeg.innerHTML = STEPS.map(function (s, i) { return '<button type="button" data-step="' + i + '" aria-pressed="false">' + (i + 1) + ' ' + s[1] + '</button>'; }).join('');
+
+  var tabs = { about: document.getElementById('t-about'), screens: document.getElementById('t-screens') };
+  var panels = { about: document.getElementById('p-about'), screens: document.getElementById('p-screens') };
+  var vf = document.getElementById('vf'), frame = document.getElementById('frame');
+
+  function fit() { var s = Math.min(1, frame.clientWidth / 1440); vf.style.transform = 'scale(' + s + ')'; vf.style.height = (frame.clientHeight / s) + 'px'; }
+  function url() { return cur.opt + '/adm-' + STEPS[cur.step][0] + '.html'; }
+  function render(push) {
+    Object.keys(tabs).forEach(function (k) {
+      var on = k === cur.tab;
+      tabs[k].setAttribute('aria-selected', on); tabs[k].tabIndex = on ? 0 : -1; panels[k].hidden = !on;
+    });
+    if (cur.tab === 'screens') {
+      if (vf.getAttribute('src') !== url()) vf.src = url();
+      document.getElementById('openNew').href = url();
+      stepSeg.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.step === cur.step); });
+      document.querySelectorAll('#optSeg button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.opt === cur.opt); });
+      document.getElementById('desc').textContent = (cur.step + 1) + '. ' + STEPS[cur.step][1] + '（ADM-' + STEPS[cur.step][0] + '）：' + STEPS[cur.step][2] + '　｜　表示中：' + OPT[cur.opt];
+      fit();
+    }
+    var h = cur.tab === 'about' ? '#about' : '#screens/' + STEPS[cur.step][0] + '/' + cur.opt;
+    if (push && location.hash !== h) history.replaceState(null, '', h);
+  }
+  function fromHash() {
+    var m = location.hash.match(/^#screens(?:\/(\d{3}))?(?:\/(option[12]))?/);
+    if (m) {
+      cur.tab = 'screens';
+      var i = STEPS.findIndex(function (s) { return s[0] === m[1]; });
+      if (i >= 0) cur.step = i;
+      if (m[2]) cur.opt = m[2];
+    } else { cur.tab = 'about'; }
+  }
+  function go(tab, step, opt) { cur.tab = tab; if (step != null) cur.step = step; if (opt) cur.opt = opt; render(true); window.scrollTo(0, 0); }
+
+  Object.keys(tabs).forEach(function (k) { tabs[k].addEventListener('click', function () { go(k); }); });
+  document.querySelector('[role="tablist"]').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    var next = cur.tab === 'about' ? 'screens' : 'about'; go(next); tabs[next].focus(); e.preventDefault();
+  });
+  document.getElementById('p-about').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-go]'); if (!b) return;
+    go('screens', b.dataset.step != null ? +b.dataset.step : cur.step, b.dataset.go);
+  });
+  stepSeg.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) go('screens', +b.dataset.step); });
+  document.getElementById('optSeg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) go('screens', null, b.dataset.opt); });
+  document.getElementById('swap').addEventListener('click', function () { go('screens', null, cur.opt === 'option1' ? 'option2' : 'option1'); });
+  window.addEventListener('hashchange', function () { fromHash(); render(false); });
+  window.addEventListener('resize', fit);
+  fromHash(); render(false);
+})();
+</script>
+</body>
+</html>

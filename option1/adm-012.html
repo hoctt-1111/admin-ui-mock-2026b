@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-012 ビル詳細｜Option 1 現行UI踏襲（提案用イメージ）</title>
+<style>
+/* ===== Option 1 共通ベース（現行 common.css / jquery-ui.css の値を参照。font のみ読みやすいシステムフォントへ変更） ===== */
+:root { --th:#6699cc; --thb:#336699; --menu:#f2f2ee; --txt:#333; --tab:#f6f6f6; --tabb:#c5c5c5; --taba:#007fff; --taba-b:#003eff; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #e9e9e9; color: var(--txt); font: 13px/1.5 -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
+.canvas { width: 1440px; min-height: 100vh; margin: 0 auto; background: #fff; }
+.proposal-bar { display: flex; align-items: center; gap: 14px; height: 34px; padding: 0 14px; background: #fff8d6; border-bottom: 1px solid #e0c96b; font-size: 12px; }
+.proposal-bar .stamp { padding: 1px 8px; border: 1px solid #8a5a00; color: #8a5a00; font-weight: bold; }
+.proposal-bar a { color: #336699; }
+.proposal-bar a.cur { color: #000; font-weight: bold; text-decoration: none; }
+.proposal-bar .sp { margin-left: auto; color: #8a5a00; }
+table { border-collapse: collapse; }
+table.edit { table-layout: fixed; }
+table.edit th, table.list th { padding: 2px 4px; background: var(--th); border: 1px solid var(--thb); color: #fff; font-weight: normal; }
+table.edit td { padding: 2px 4px; background: #fff; vertical-align: middle; }
+table.list { width: 100%; table-layout: fixed; }
+table.list td { padding: 2px 4px; border: 1px solid #ddd; }
+.c { text-align: center; } .r { text-align: right; } .l { text-align: left; } .t { vertical-align: top; }
+input.f, select.f, textarea.f { height: 22px; padding: 1px 3px; border: 1px solid #999; background: #fff; font: inherit; color: var(--txt); }
+textarea.f { height: auto; width: 100%; resize: none; }
+button { height: 22px; padding: 0 6px; background: #eee; border: 1px solid #000; font: inherit; line-height: 18px; cursor: pointer; white-space: nowrap; }
+button .g, .ib { display: inline-block; width: 14px; height: 14px; margin-right: 3px; border: 1px solid #777; border-radius: 2px; background: #fff; font-size: 10px; line-height: 12px; text-align: center; vertical-align: -2px; color: #333; }
+.ib { margin: 0; cursor: pointer; }
+.ib.add { color: #2a8a2a; } .ib.del { color: #b00; } .ib.edit { color: #336699; } .ib.save { color: #336699; }
+ul.chk { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+ul.chk li { margin: 0 -1px -1px 0; padding: 2px 6px; border: 1px solid #000; background: #fff; line-height: 1.2; cursor: pointer; }
+ul.chk li.on { background: #1c75ba; color: #fff; }
+ul.rad { display: inline-flex; margin: 0; padding: 0; list-style: none; vertical-align: middle; }
+ul.rad li { margin: 0 -1px 0 0; padding: 0 6px; border: 1px solid #000; background: #fff; line-height: 20px; cursor: pointer; }
+ul.rad li.on { background: #eea; }
+.undef { color: #999; }
+.note-inline { color: #888; font-size: 11px; }
+.tabs { margin-top: 10px; border: 1px solid #ddd; }
+.tabs > ul.nav { display: flex; gap: 2px; margin: 0; padding: 3px 3px 0; background: #e9e9e9; border-bottom: 1px solid #ddd; list-style: none; }
+.tabs > ul.nav li { padding: 3px 10px; background: var(--tab); border: 1px solid var(--tabb); border-bottom: 0; border-radius: 3px 3px 0 0; color: #454545; cursor: pointer; }
+.tabs > ul.nav li.on { background: var(--taba); border-color: var(--taba-b); color: #fff; }
+.tabs > .panel { display: none; padding: 6px; }
+.tabs > .panel.on { display: block; }
+.backdrop { padding: 30px 0 40px; background: #9a9a9a; }
+.dialog { margin: 0 auto; background: #fff; border: 1px solid #ddd; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.dialog .titlebar { display: flex; justify-content: space-between; padding: 3px 10px; background: #ddd; font-weight: bold; }
+.dialog .body { padding: 6px; }
+.dialog .buttonpane { display: flex; gap: 5px; padding: 6px 10px; border-top: 1px solid #ddd; }
+.dialog .buttonpane .right { margin-left: auto; display: flex; gap: 5px; }
+/* ===== 画面固有（bukken/css/buil.css, list.css 参照） ===== */
+#basic table.edit { width: 100%; margin-bottom: 2px; }
+.code { font-weight: bold; }
+.photo { width: 80px; height: 60px; background: repeating-linear-gradient(45deg,#d9d9d9,#d9d9d9 6px,#ececec 6px,#ececec 12px); border: 1px solid #bbb; }
+.expander { margin-bottom: 5px; }
+.expander .title-bar { display: flex; justify-content: space-between; height: 24px; padding: 2px 6px; background: #9cf; border: 1px solid #369; border-radius: 4px; cursor: pointer; }
+.expander .content { display: none; padding: 4px; }
+.expander.open .content { display: block; }
+.frame2 { display: flex; gap: 12px; }
+.frame2 .lpane { width: 420px; } .frame2 .rpane { flex: 1; }
+table.bukken tr.aki1 td, table.bukken tr.aki2 td, table.bukken tr.aki3 td, table.bukken tr.aki4 td { background: #ffc; }
+table.bukken tr.aki9 td { background: #ddd; color: #999; }
+table.bukken td.yoto { color: #aaa; text-align: center; }
+table.bukken td.yoto.on { background: #666 !important; color: #fff; }
+.gl { min-height: 110px; margin-bottom: 6px; padding: 4px; border: 1px dashed #bbb; color: #888; }
+.thumbs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.thumbs span { width: 72px; height: 54px; background: repeating-linear-gradient(45deg,#d9d9d9,#d9d9d9 6px,#ececec 6px,#ececec 12px); border: 1px solid #bbb; }
+.stars { color: #c90; letter-spacing: 1px; }
+</style>
+<script src="../shared/mock-data.js"></script>
+</head>
+<body>
+<div class="canvas">
+
+<div class="proposal-bar">
+  <span class="stamp">提案用イメージ</span>
+  <span>Option 1 現行UI踏襲</span>
+  <span>業務フロー:</span>
+  <a href="adm-073.html">1 顧客設定</a> →
+  <a href="adm-030.html">2 物件一覧</a> →
+  <a class="cur" href="adm-012.html">3 ビル詳細</a> →
+  <a href="adm-096.html">4 レポート ビル設定</a> →
+  <a href="adm-086.html">5 レポートリスト</a>
+  <span class="sp">データはすべて架空です</span>
+</div>
+
+<!-- 現行: 物件一覧上に jQuery UI ダイアログ（1080×600）で開く -->
+<div class="backdrop">
+<div class="dialog" style="width:1080px">
+  <div class="titlebar" data-item="012-01"><span>ビル詳細</span><a href="adm-030.html" style="color:#333;text-decoration:none" title="閉じて物件一覧へ">×</a></div>
+  <div class="body">
+
+  <div id="basic">
+    <table class="edit">
+      <colgroup><col width="70"><col width="70"><col width="80"><col width="200"><col width="80"><col><col width="50"><col width="110"><col width="90"></colgroup>
+      <tr>
+        <th data-item="012-04">番号</th><td class="c code" id="code"></td>
+        <th data-item="012-05">最終更新</th><td id="updated"></td>
+        <th data-item="012-06">最終確認</th><td><input class="f" style="width:96px" id="checkDate">：<span id="checkStaff"></span></td>
+        <th data-item="012-07">状態</th><td class="c"><select class="f"><option id="status"></option><option>WEB非表示</option></select></td>
+        <td class="t r" rowspan="3"><div class="photo" data-item="012-08" title="外観写真"></div></td>
+      </tr>
+      <tr><th data-item="012-09">ビル名</th><td colspan="3"><input class="f" style="width:100%" id="name"></td><th data-item="012-10">旧ビル名</th><td colspan="3"><input class="f" style="width:100%" id="oldName"></td></tr>
+      <tr><th data-item="012-11">ヨミガナ</th><td colspan="3"><input class="f" style="width:100%" id="kana"></td>
+        <th data-item="012-12"><span class="ib edit">✎</span>添付</th>
+        <td colspan="3"><label><input type="checkbox" checked> 外観</label> <label><input type="checkbox" checked> パンフ</label> <span class="ib">PDF</span> <label><input type="checkbox"> 謄本</label></td></tr>
+    </table>
+    <table class="edit" style="width:100%">
+      <colgroup><col width="70"><col><col width="75"></colgroup>
+      <tr><th>住所</th>
+        <td><table><tr>
+          <td><button data-item="012-13">地区番号</button></td>
+          <td data-item="012-14"><input class="f" style="width:60px" id="chikuCode"></td>
+          <td data-item="012-15"><select class="f"><option id="pref"></option></select></td>
+          <td data-item="012-16" id="chikuName"></td>
+          <td data-item="012-17"><input class="f" style="width:160px" id="address"></td>
+          <td data-item="012-18"><input class="f" style="width:36px" id="cyoume"> - <input class="f" style="width:36px" id="banchi"> - <input class="f" style="width:36px" id="gou"></td>
+          <td data-item="012-19"><label><input type="checkbox"> 地番</label></td>
+          <td style="width:30px"></td>
+          <td data-item="012-20"><span class="ib">〒</span> <input class="f" style="width:80px" id="zip"></td>
+        </tr></table></td>
+        <td class="r"><span class="ib" data-item="012-21" style="width:auto;padding:0 4px">地図設定</span></td></tr>
+    </table>
+  </div>
+
+  <div class="expander" id="pnlCheck" data-item="012-22">
+    <div class="title-bar"><span>汎用チェック</span><span>＋</span></div>
+    <div class="content"><ul class="chk" id="builChk"></ul></div>
+  </div>
+  <div class="expander open" id="pnlMemo" data-item="012-23">
+    <div class="title-bar"><span>備考</span><span>－</span></div>
+    <div class="content">
+      <table style="width:100%;margin-bottom:5px"><colgroup><col width="70"><col></colgroup>
+        <tr><th class="l" style="background:#69c;color:#fff;font-weight:normal" data-item="012-24">営業備考</th><td><textarea class="f" rows="2" id="bikoSales"></textarea></td></tr></table>
+      <table style="width:100%"><colgroup><col width="70"><col width="400"><col width="70"><col></colgroup>
+        <tr><th class="l" style="background:#69c;color:#fff;font-weight:normal" data-item="012-25">外部備考</th><td><textarea class="f" rows="2" id="bikoExternal"></textarea></td>
+            <th style="background:#69c;color:#fff;font-weight:normal" data-item="012-26">社内依頼</th><td><textarea class="f" rows="2" id="bikoRequest"></textarea></td></tr></table>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <ul class="nav">
+      <li data-tab="t-owner" data-item="012-27">連絡先</li>
+      <li data-tab="t-locate" data-item="012-28">立地</li>
+      <li data-tab="t-kozo" data-item="012-29">構造</li>
+      <li data-tab="t-spec" data-item="012-30">設備</li>
+      <li data-tab="t-contract" data-item="012-31">契約</li>
+      <li data-tab="t-mark" data-item="012-32">特徴</li>
+      <li data-tab="t-web" data-item="012-33">WEB</li>
+      <li data-tab="t-sgallery" data-item="012-34">写真(営業)</li>
+      <li data-tab="t-mgallery" data-item="012-35">写真(運営)</li>
+      <li data-tab="t-floor" data-item="012-36">フロア一覧</li>
+    </ul>
+
+    <div class="panel" id="t-owner">
+      <div style="text-align:right;margin-bottom:4px"><button data-item="012-37"><span class="g add">+</span>問合せ先を追加</button></div>
+      <table class="list" id="ownerTable">
+        <colgroup><col width="25"><col width="25"><col width="25"><col width="25"><col width="72"><col width="110"><col width="80"><col width="90"><col width="120"><col width="120"><col></colgroup>
+        <thead>
+          <tr><th rowspan="3" colspan="4" data-item="012-38"></th><th data-item="012-39">問合</th><th data-item="012-40">確認日</th><th class="l" colspan="3" data-item="012-41">オーナー</th><th data-item="012-42">TEL</th><th data-item="012-43">オーナー備考</th></tr>
+          <tr><th data-item="012-44">種別</th><th data-item="012-45">確認者</th><th data-item="012-46">PR</th><th data-item="012-47">分類</th><th></th><th data-item="012-48">携帯番号</th><th data-item="012-49">担当者</th></tr>
+          <tr><th></th><th></th><th class="l" colspan="5" data-item="012-50">ビル備考</th></tr>
+        </thead>
+        <tbody id="ownerRows"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="t-locate">
+      <div class="frame2">
+        <div class="lpane">
+          <table class="edit" style="width:100%"><colgroup><col width="100"><col></colgroup>
+            <tr><td data-item="012-51"><ul class="chk"><li id="street">大通り沿い</li></ul></td><td>大通り名1 <input class="f" style="width:200px" id="street1"></td></tr>
+            <tr><td></td><td data-item="012-52">大通り名2 <input class="f" style="width:200px"></td></tr>
+            <tr><td data-item="012-53"><ul class="chk"><li id="corner">角ビル</li></ul></td><td></td></tr>
+            <tr><td data-item="012-54"><ul class="chk"><li id="eki">駅直結</li></ul></td><td></td></tr>
+          </table>
+        </div>
+        <div class="rpane">
+          <table class="list" data-item="012-55"><colgroup><col><col width="60"></colgroup><tbody id="ekiRows"></tbody></table>
+          <div style="margin-top:4px"><button data-item="012-56"><span class="g add">+</span>最寄駅の追加</button> <button data-item="012-57"><span class="g del">×</span>最寄駅のクリア</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="t-kozo">
+      <table class="edit" style="width:100%">
+        <colgroup><col width="95"><col width="100"><col width="100"><col width="100"><col width="125"><col width="125"><col width="100"><col></colgroup>
+        <tr><th data-item="012-58">竣工</th><th data-item="012-59">最終ﾘﾆｭｰｱﾙ年</th><th data-item="012-60">ﾘﾆｭｰｱﾙ外壁</th><th data-item="012-61">ﾘﾆｭｰｱﾙ玄関</th><th data-item="012-62">ﾘﾆｭｰｱﾙEV</th><th class="l" colspan="3" data-item="012-63">ﾘﾆｭｰｱﾙ内容</th></tr>
+        <tr><td class="c"><input class="f" style="width:80px" data-k="completion"></td><td class="c"><input class="f" style="width:60px" data-k="renewal"></td><td class="c"><input class="f" style="width:60px" data-k="rnWall"></td><td class="c"><input class="f" style="width:60px" data-k="rnEntrance"></td><td class="c"><input class="f" style="width:60px" data-k="rnEv"></td><td class="l" colspan="3"><input class="f" style="width:100%" data-k="rnMemo"></td></tr>
+        <tr><th data-item="012-64">構造</th><th data-item="012-65">地上</th><th data-item="012-66">地下</th><th data-item="012-67">基準階</th><th data-item="012-68">総面積</th><th data-item="012-69">延床面積</th><th data-item="012-70">耐震1</th><th class="l" data-item="012-71">耐震2</th></tr>
+        <tr><td class="c"><select class="f"><option data-k="architect"></option></select></td><td class="c"><input class="f r" style="width:40px" data-k="ground"> 階</td><td class="c"><input class="f r" style="width:40px" data-k="underground"> 階</td>
+          <td class="c"><input class="f r" style="width:60px" data-k="baseFloor"> 坪</td><td class="c"><input class="f r" style="width:70px" data-k="totalTsubo"> 坪</td><td class="c"><input class="f r" style="width:70px" data-k="sumTsubo"> 坪</td>
+          <td class="c"><select class="f"><option data-k="taishin1"></option></select></td><td class="l"><select class="f"><option data-k="taishin2"></option><option>免震</option><option>制震</option><option>補強済</option></select></td></tr>
+      </table>
+    </div>
+
+    <div class="panel" id="t-spec">
+      <table class="edit" style="width:100%"><colgroup><col width="80"><col width="110"><col width="140"><col><col width="80"><col width="200"></colgroup>
+        <tr><th class="c">EV</th><td data-item="012-72">基数 <select class="f"><option data-s="ev"></option></select></td><td data-item="012-73">常用 <input class="f r" style="width:36px" data-s="evPersons"> 人乗り</td>
+          <td data-item="012-74"><ul class="chk"><li>荷物用</li><li>非常用</li><li>寝台用</li></ul></td><th data-item="012-75">EV確認日</th><td><input class="f" style="width:96px" data-s="evDate">：<span data-s="evStaff"></span></td></tr></table>
+      <table class="edit" style="width:100%"><colgroup><col width="80"><col width="80"><col width="100"><col width="100"><col width="250"><col><col width="80"><col width="180"></colgroup>
+        <tr><th class="c">Ｐ</th><td data-item="012-76"><select class="f"><option data-s="p"></option></select></td><td data-item="012-77">総数 <input class="f r" style="width:36px" data-s="pTotal"> 台</td><td data-item="012-78">空き <input class="f r" style="width:36px" data-s="pAki"> 台</td>
+          <td data-item="012-79">備考 <input class="f" style="width:190px" data-s="pMemo"></td><td data-item="012-80"><ul class="chk"><li>平置き</li><li class="on">機械式</li><li>時間貸</li></ul></td><th data-item="012-81">P確認日</th><td><input class="f" style="width:96px" data-s="pDate">：<span data-s="pStaff"></span></td></tr></table>
+      <table class="edit" style="width:100%"><colgroup><col width="80"><col width="630"><col width="80"><col></colgroup>
+        <tr><th data-item="012-82">エントランス</th><td><select class="f"><option data-s="entrance"></option></select> 備考<input class="f" style="width:430px" data-s="entranceMemo"></td><th data-item="012-83">セキュリティ</th><td><select class="f"><option data-s="security"></option></select></td></tr></table>
+      <table class="edit" style="width:100%"><colgroup><col width="80"><col width="120"><col width="80"><col width="60"><col width="60"><col width="60"><col width="60"><col width="100"><col></colgroup>
+        <tr><th data-item="012-84">光ファイバー</th><td><select class="f"><option data-s="hikari"></option></select></td><th data-item="012-85">貸会議室</th><td><input type="checkbox" data-b="kashiKai"></td><th data-item="012-86">貸倉庫</th><td><input type="checkbox" data-b="kashiSou"></td>
+          <th data-item="012-87">使用時間</th><td><select class="f"><option data-s="usetime"></option></select></td><td><input class="f" style="width:260px" data-s="usetimeMemo"></td></tr>
+        <tr><th data-item="012-88">駐輪スペース</th><td><input type="checkbox" data-b="churin"></td><th data-item="012-89">自家発電</th><td><input type="checkbox" data-b="jikaHatuden"></td><th colspan="2" data-item="012-90">多機能トイレ</th><td><input type="checkbox" data-b="multiToilet"></td></tr>
+        <tr><th data-item="012-91">特殊ニーズ</th><td colspan="8"><ul class="rad"><li class="on">可</li><li>不可</li></ul>
+          <span style="margin-left:10px">詳細 <input class="f" style="width:430px" data-s="specialNeedsMemo"></span> <span style="margin-left:10px">詳細 <input class="f" style="width:300px"></span></td></tr>
+      </table>
+    </div>
+
+    <div class="panel" id="t-contract">
+      <table class="edit" style="width:100%">
+        <colgroup><col width="140"><col width="180"><col width="300"><col width="120"><col width="80"><col></colgroup>
+        <tr data-item="012-92"><th class="l">項目名</th><th class="l">状態</th><th class="c">備考</th><th class="c">確認日</th><th class="c">確認者</th><th></th></tr>
+        <tr data-item="012-93"><td>契約種別</td><td><ul class="rad"><li class="on">普通借</li><li>定借</li></ul></td><td><input class="f" style="width:100%" id="teikiMemo"></td><td class="c"><input class="f" style="width:96px" id="teikiDate"></td><td class="c" id="teikiStaff"></td><td></td></tr>
+        <tr data-item="012-94"><td>建替予定</td><td><ul class="rad"><li>有</li><li class="on">無</li></ul></td><td><input class="f" style="width:100%"></td><td class="c"><input class="f" style="width:96px"></td><td class="c"></td><td></td></tr>
+        <tr data-item="012-95"><td>短期貸し</td><td><ul class="rad"><li>可</li><li class="on">不可</li></ul></td><td><input class="f" style="width:100%"></td><td class="c"><input class="f" style="width:96px"></td><td class="c"></td><td></td></tr>
+        <tr data-item="012-96"><td>保証契約</td><td><ul class="rad"><li class="on">有</li><li>無</li></ul></td><td><input class="f" style="width:100%" value="加入必須"></td><td class="c"><input class="f" style="width:96px"></td><td class="c"></td><td></td></tr>
+        <tr data-item="012-97"><td>原状回復</td><td><ul class="rad"><li class="on">有</li><li>無</li></ul></td><td><input class="f" style="width:100%" value="スケルトン返し"></td><td class="c"><input class="f" style="width:96px"></td><td class="c"></td><td></td></tr>
+        <tr><td></td><td></td><td data-item="012-98">※床・壁・天井なし、造作撤去</td><td></td><td></td><td></td></tr>
+        <tr data-item="012-99"><td>アスベスト診断書</td><td colspan="5"><ul class="rad"><li>有</li><li class="on">無</li></ul></td></tr>
+        <tr data-item="012-100"><td>建築完了検査の検査済証</td><td colspan="5"><ul class="rad"><li class="on">有</li><li>無</li></ul></td></tr>
+        <tr data-item="012-101"><td>耐震診断書</td><td colspan="5"><ul class="rad"><li>有</li><li class="on">無</li></ul></td></tr>
+      </table>
+      <section style="margin-top:6px" data-item="012-102"><p class="note-inline">（契約履歴一覧：契約2件。一覧の列構成は 要確認）</p></section>
+    </div>
+
+    <div class="panel" id="t-mark">
+      <table style="width:100%;margin-bottom:5px"><colgroup><col><col width="100"><col width="150"></colgroup>
+        <tr><td data-item="012-103"><span class="note-inline" style="font-size:12px">このビルの特徴を選択し、「保存」ボタンを押してください。</span></td>
+          <td class="r"><button data-item="012-104"><span class="g">設</span>ビル特徴</button></td><td class="r"><button data-item="012-105"><span class="g">設</span>ビル特徴カテゴリー</button></td></tr></table>
+      <div data-item="012-106"><p class="note-inline">（特徴項目・カテゴリはマスタ設定値。以下は仮ラベル：要確認）</p>
+        <ul class="chk"><li class="on">新耐震</li><li class="on">オートロック</li><li>天井高2.6m以上</li><li class="on">駅徒歩5分以内</li><li>角部屋</li><li>リニューアル済</li><li>OAフロア</li><li>個別空調</li></ul></div>
+    </div>
+
+    <div class="panel" id="t-web">
+      <table class="edit" style="width:100%;margin-bottom:5px"><colgroup><col width="150"><col><col width="70"><col><col width="70"><col><col width="90"><col></colgroup>
+        <tr><th data-item="012-107">キャッチコピー</th><td colspan="7"><input class="f" style="width:100%" data-w="catchcopy"></td></tr>
+        <tr><th data-item="012-108">ガイド</th><td colspan="7"><textarea class="f" rows="2" data-w="guide"></textarea></td></tr>
+        <tr><th data-item="012-109">Webガイド <span class="ib" data-item="012-110" title="AI生成" style="width:auto;padding:0 3px">AI</span></th><td colspan="7"><textarea class="f" rows="3" data-w="wguide"></textarea></td></tr>
+        <tr><th data-item="012-111">周辺ガイド</th><td colspan="7"><textarea class="f" rows="2" data-w="wguide2"></textarea></td></tr>
+        <tr><th data-item="012-112">担当</th><td colspan="7"><select class="f"><option data-w="staff"></option></select></td></tr>
+        <tr><th data-item="012-113">駅近</th><td><select class="f"><option data-star="star1"></option></select></td><th data-item="012-114">設備</th><td><select class="f"><option data-star="star2"></option></select></td>
+          <th data-item="012-115">耐震性</th><td><select class="f"><option data-star="star3"></option></select></td><th data-item="012-116">エントランス</th><td><select class="f"><option data-star="star4"></option></select></td></tr>
+      </table>
+    </div>
+
+    <div class="panel" id="t-sgallery">
+      <div class="frame2" data-item="012-117">
+        <div class="lpane" style="width:640px">
+          <div class="gl">外観<div class="thumbs"><span></span><span></span><span></span></div></div>
+          <div class="gl">エントランス・共用部<div class="thumbs"><span></span><span></span></div></div>
+          <div class="gl">室内<div class="thumbs"><span></span><span></span><span></span><span></span></div></div>
+        </div>
+        <div class="rpane"><div class="gl" style="min-height:350px">図面・その他<div class="thumbs"><span></span></div><p class="note-inline">（4区画の名称・用途は 要確認）</p></div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="t-mgallery">
+      <table style="margin-bottom:6px"><tr><td data-item="012-118"><select class="f"><option>済み以外</option><option>済みを含む</option></select></td><td data-item="012-119"><ul class="chk"><li>すべて選択</li></ul></td></tr></table>
+      <div data-item="012-120" class="gl">（運営写真一覧：ヘッダ＋一覧。列構成は 要確認）<div class="thumbs"><span></span><span></span><span></span><span></span><span></span></div></div>
+    </div>
+
+    <div class="panel" id="t-floor">
+      <table style="width:100%;margin-bottom:4px"><colgroup><col width="60"><col width="100"><col><col></colgroup>
+        <tr><th style="background:#69c;color:#fff;font-weight:normal" data-item="012-121">検索条件</th>
+          <td><select class="f"><option>空きのみ</option><option selected>済みを含む</option><option>削除のみ</option></select></td>
+          <td><button data-item="012-122"><span class="g">Q</span>検索</button></td>
+          <td class="r"><label data-item="012-123"><input type="checkbox"> セットアップコピー</label> <button data-item="012-124"><span class="g add">+</span>新規フロア作成</button></td></tr></table>
+      <table class="list bukken">
+        <colgroup><col width="25"><col width="20"><col width="20"><col width="20"><col width="20"><col width="80"><col width="80"><col width="18"><col width="80"><col width="90"><col width="50"><col width="80"><col width="80"><col width="80"><col width="80"><col width="80"><col></colgroup>
+        <thead>
+          <tr><th rowspan="2" data-item="012-125">&nbsp;</th><th colspan="4" data-item="012-126">階</th><th data-item="012-127">室名</th><th data-item="012-128">種別</th><th class="r" colspan="2" data-item="012-129">坪数</th>
+            <th rowspan="2" data-item="012-130">敷金／保証金</th><th rowspan="2" data-item="012-131">礼金</th><th data-item="012-132">賃料</th><th data-item="012-133">共益費</th>
+            <th rowspan="2" data-item="012-134">更新料</th><th rowspan="2" data-item="012-135">償却</th><th rowspan="2" data-item="012-136">入居日</th><th rowspan="2" data-item="012-137">更新</th></tr>
+          <tr><th colspan="4" data-item="012-138">用途</th><th data-item="012-139">状態</th><th data-item="012-140">フロア番号</th><th class="r" colspan="2">平米</th><th>(坪単価)</th><th>(坪単価)</th></tr>
+        </thead>
+        <tbody id="floorRows"></tbody>
+      </table>
+      <p class="note-inline">※階の編集アイコンからフロア詳細（別画面）を開く。行頭アイコン：削除（削除済は復元）／コピー。</p>
+    </div>
+  </div><!-- /tabs -->
+  </div><!-- /body -->
+  <div class="buttonpane">
+    <button data-item="012-02"><span class="g del">×</span>削除</button>
+    <div class="right"><button data-item="012-03"><span class="g save">✓</span>保存</button></div>
+  </div>
+</div>
+<p style="width:1080px;margin:8px auto 0;color:#fff;font-size:12px">
+  次の操作 → ダイアログを閉じて物件一覧で候補を一時保存 →「編集」で顧客・タイトルを設定 → <a style="color:#fff" href="adm-096.html">レポート ビル設定へ</a>
+</p>
+</div>
+</div><!-- /canvas -->
+
+<script>
+(function () {
+  var M = window.MOCK, B = M.findBuilding('010231');
+  function set(id, v) { var el = document.getElementById(id); if (!el) return; if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v == null ? '' : v; else el.textContent = v == null ? '' : v; }
+  set('code', B.code); set('updated', B.updated); set('checkDate', B.checkDate); set('checkStaff', B.checkStaff); set('status', B.status);
+  set('name', B.name); set('oldName', B.oldName); set('kana', B.kana); set('chikuCode', B.chikuCode); set('pref', B.pref); set('chikuName', B.chikuName);
+  set('address', B.address); set('cyoume', B.cyoume); set('banchi', B.banchi); set('gou', B.gou); set('zip', B.zip);
+  set('bikoSales', B.biko.sales); set('bikoExternal', B.biko.external); set('bikoRequest', B.biko.request); set('street1', B.locate.street1);
+  ['street', 'corner', 'eki'].forEach(function (k) { if (B.locate[k]) document.getElementById(k).classList.add('on'); });
+  set('teikiMemo', B.contract.teikiMemo); set('teikiDate', B.contract.teikiDate); set('teikiStaff', B.contract.teikiStaff);
+  document.querySelectorAll('[data-k]').forEach(function (el) { var v = B.kozo[el.getAttribute('data-k')]; if (el.tagName === 'INPUT') el.value = v == null ? '' : v; else el.textContent = v == null ? '' : v; });
+  document.querySelectorAll('[data-s]').forEach(function (el) { var v = B.spec[el.getAttribute('data-s')]; if (el.tagName === 'INPUT') el.value = v == null ? '' : v; else el.textContent = v == null ? '' : v; });
+  document.querySelectorAll('[data-b]').forEach(function (el) { el.checked = !!B.spec[el.getAttribute('data-b')]; });
+  document.querySelectorAll('[data-w]').forEach(function (el) { var v = B.web[el.getAttribute('data-w')]; if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = v; else el.textContent = v; });
+  document.querySelectorAll('[data-star]').forEach(function (el) { el.textContent = '★★★★★'.slice(0, B.web[el.getAttribute('data-star')]); el.className = 'stars'; });
+  var BCHK = ['図面有', 'パンフ有', '謄本有', '外観有', '詳細写真有', 'チェック6', 'チェック7', 'チェック8', 'チェック9', 'チェック10', 'チェック11', 'チェック12', 'チェック13'];
+  document.getElementById('builChk').innerHTML = BCHK.map(function (l) { return '<li' + (B.checks.indexOf(l) >= 0 ? ' class="on"' : '') + '>' + l + '</li>'; }).join('');
+  document.getElementById('ekiRows').innerHTML = B.stations.map(function (e) { return '<tr><td>' + e.rosen + ' ' + e.eki + ' <span class="ib edit">✎</span></td><td class="r">' + e.tm + '分</td></tr>'; }).join('');
+  document.getElementById('ownerRows').innerHTML = B.owners.map(function (o) {
+    return '<tr><td class="c" rowspan="3"><span class="ib del">×</span></td><td class="c" rowspan="3"><span class="ib edit">✎</span></td><td class="c"><span class="ib">↑</span></td><td class="c" rowspan="3"><input type="radio" name="bo"' + (o.priority ? ' checked' : '') + '></td>' +
+      '<td class="c">' + o.priority + '</td><td class="c">' + o.checkDate + '</td><td colspan="3"><a href="#" onclick="return false">' + o.name + ' ' + o.code + '</a></td><td class="c">' + o.tel + '</td><td>' + o.comment + '</td></tr>' +
+      '<tr><td></td><td class="c">' + o.type + '</td><td class="c">' + o.staff + '</td><td class="c">' + o.pr + '</td><td class="c">' + o.bunrui + '</td><td></td><td class="c">' + (o.biko.match(/090-[0-9-]+/) || [''])[0] + '</td><td class="c">' + (o.biko.indexOf('担:') >= 0 ? '架空 次郎' : '') + '</td></tr>' +
+      '<tr><td class="c"><span class="ib">↓</span></td><td></td><td></td><td colspan="5">' + '<span class="undef">（ビル備考）</span>' + '</td></tr>';
+  }).join('');
+  var akiCls = { '空': 0, '未解約': 1, '先行有': 2, '申込有': 3, '内定有': 4, '済': 9 };
+  document.getElementById('floorRows').innerHTML = B.floors.map(function (f) {
+    var a = M.AKI[f.aki], cls = 'aki' + akiCls[a];
+    var yoto = ['事', '店', '倉', 'マ'].map(function (y) { return '<td class="yoto' + (f.yoto.indexOf(y) >= 0 ? ' on' : '') + '">' + y + '</td>'; }).join('');
+    return '<tr class="' + cls + '"><td class="c"><span class="ib del" title="削除">×</span></td><td colspan="4"><span class="ib edit" title="フロア詳細">✎</span> ' + f.kai + '</td><td class="c">' + f.name + '</td><td class="c">' + f.type + '</td>' +
+      '<td class="c" rowspan="2">' + f.gn + '</td><td class="r" rowspan="2">' + f.tsubo.toFixed(2) + '坪<br>' + f.metor.toFixed(2) + '㎡</td><td class="c" rowspan="2">' + f.hosho + '</td><td class="c" rowspan="2">' + f.reikin + '</td>' +
+      '<td class="r" rowspan="2">' + M.yen(f.feeTotal) + '<br>(' + M.yen(f.feePer) + ')</td><td class="r" rowspan="2">' + M.yen(f.pubTotal) + '<br>(' + M.yen(f.pubPer) + ')</td>' +
+      '<td class="c" rowspan="2">' + f.koshin + '</td><td class="c" rowspan="2">' + f.shokyaku + '</td><td class="c" rowspan="2">' + f.nyukyo + '</td><td class="c">' + f.staff + '</td></tr>' +
+      '<tr class="' + cls + '"><td class="c"><span class="ib" title="コピー">⧉</span></td>' + yoto + '<td class="c"><b>' + a + '</b></td><td class="c undef">' + f.no + '</td><td class="c">' + f.akiDate + '</td></tr>';
+  }).join('');
+
+  function showTab(id) {
+    document.querySelectorAll('#tabs > ul.nav li').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-tab') === id); });
+    document.querySelectorAll('#tabs > .panel').forEach(function (p) { p.classList.toggle('on', p.id === id); });
+  }
+  document.querySelectorAll('#tabs > ul.nav li').forEach(function (li) { li.addEventListener('click', function () { showTab(li.getAttribute('data-tab')); }); });
+  showTab('t-floor'); // 現行も ?tab= で初期タブを指定可能。フローでは空室確認のためフロア一覧を初期表示
+  document.querySelectorAll('.expander .title-bar').forEach(function (t) { t.addEventListener('click', function () { t.parentNode.classList.toggle('open'); }); });
+})();
+</script>
+</body>
+</html>

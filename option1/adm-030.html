@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>ADM-030 物件一覧｜Option 1 現行UI踏襲（提案用イメージ）</title>
+<style>
+/* ===== Option 1 共通ベース（現行 common.css / jquery-ui.css の値を参照。font のみ読みやすいシステムフォントへ変更） ===== */
+:root { --th:#6699cc; --thb:#336699; --menu:#f2f2ee; --txt:#333; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #e9e9e9; color: var(--txt); font: 13px/1.5 -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
+.canvas { width: 1440px; min-height: 100vh; margin: 0 auto; background: #fff; }
+.proposal-bar { display: flex; align-items: center; gap: 14px; height: 34px; padding: 0 14px; background: #fff8d6; border-bottom: 1px solid #e0c96b; font-size: 12px; }
+.proposal-bar .stamp { padding: 1px 8px; border: 1px solid #8a5a00; color: #8a5a00; font-weight: bold; }
+.proposal-bar a { color: #336699; }
+.proposal-bar a.cur { color: #000; font-weight: bold; text-decoration: none; }
+.proposal-bar .sp { margin-left: auto; color: #8a5a00; }
+table { border-collapse: collapse; }
+table.list { width: 100%; table-layout: fixed; }
+table.list th { padding: 2px 4px; background: var(--th); border: 1px solid var(--thb); color: #fff; font-weight: normal; }
+table.list td { padding: 2px 4px; border: 1px solid #ddd; }
+.c { text-align: center; } .r { text-align: right; } .l { text-align: left; } .t { vertical-align: top; }
+input.f, select.f { height: 22px; padding: 1px 3px; border: 1px solid #999; background: #fff; font: inherit; color: var(--txt); }
+button { height: 22px; padding: 0 6px; background: #eee; border: 1px solid #000; font: inherit; line-height: 18px; cursor: pointer; white-space: nowrap; }
+button .g, .ib { display: inline-block; width: 14px; height: 14px; margin-right: 3px; border: 1px solid #777; border-radius: 2px; background: #fff; font-size: 10px; line-height: 12px; text-align: center; vertical-align: -2px; color: #333; }
+.ib { margin: 0; cursor: pointer; text-decoration: none; }
+.ib.add { color: #2a8a2a; } .ib.del { color: #b00; } .ib.edit { color: #336699; }
+ul.chk { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+ul.chk li { margin: 0 -1px -1px 0; padding: 2px 6px; border: 1px solid #000; background: #fff; line-height: 1.2; cursor: pointer; color: #333; }
+ul.chk li.on { background: #1c75ba; color: #fff; }
+.undef { color: #999; }
+.note-inline { color: #888; font-size: 11px; }
+/* ===== 画面固有（common.css #menu/#submenu/#condition, bukken/css/list.css 参照） ===== */
+#menu { height: 23px; background: var(--menu); border-bottom: 1px solid #aaa; }
+#menu ul { display: flex; width: 1300px; height: 22px; margin: 0 auto; padding: 0; list-style: none; border-left: 1px solid #aaa; border-right: 1px solid #aaa; }
+#menu li { width: 80px; border-right: 1px solid #aaa; text-align: center; line-height: 22px; }
+#menu li a { display: block; color: #333; text-decoration: none; }
+#menu li.cur { background: #69c; } #menu li.cur a { color: #fff; }
+#menu li.loginname { width: auto; margin-left: auto; padding-right: 10px; border-right: 0; text-align: right; }
+#submenu { background: var(--menu); border-bottom: 1px solid #ccc; }
+#submenu .frame { display: flex; flex-wrap: wrap; gap: 18px; width: 1300px; margin: 0 auto; padding: 2px 6px; border-left: 1px solid #999; border-right: 1px solid #999; line-height: 24px; }
+#submenu .title { font-weight: bold; margin-right: 4px; }
+#condition { padding: 5px 0; background: #69c; color: #fff; }
+#condition .box { width: 1300px; margin: 0 auto; }
+#condition .condbox td { padding: 0 4px 2px 0; }
+#condition .condbox .title, #condition .fav-title { font-weight: bold; padding-right: 8px; }
+#condition th { padding: 0 4px; font-weight: normal; color: #fff; }
+#condition ul.chk li { color: #333; }
+#conditions { margin-top: 4px; }
+#main { width: 1300px; margin: 8px auto 30px; }
+.pager { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
+.pager ul { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pager li { min-width: 28px; padding: 0 5px; background: #eee; line-height: 22px; text-align: center; cursor: pointer; }
+.pager li.cur { background: #69c; color: #fff; }
+table.digest { width: 100%; margin-bottom: 6px; }
+table.digest th { width: 70px; background: #ffc; border: 1px solid #900; color: #900; font-weight: normal; }
+table.digest td { padding-left: 4px; }
+table.digest ul { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; }
+table.digest a { color: #333; }
+.buil { margin-bottom: 18px; }
+table.list th table td { color: #fff; padding: 0 3px; }
+table.list th a { color: #fff; }
+th.builstatus.status1 { background: #fff; color: #000; }
+th.builstatus.status2 { background: #f96; color: #900; }
+th.builstatus.status0 { background: #ccc; color: #999; }
+td.img img, td.img .thumb { width: 60px; height: 45px; display: block; background: repeating-linear-gradient(45deg,#d9d9d9,#d9d9d9 6px,#ececec 6px,#ececec 12px); border: 1px solid #bbb; }
+ul.locate { display: flex; gap: 2px; margin: 3px 0; padding: 0; list-style: none; }
+ul.locate li { padding: 1px 2px; border: 1px solid #999; color: #999; line-height: 1; font-size: 11px; }
+ul.locate li.on { background: #1c75ba; border-color: #369; color: #fff; }
+td.img button { width: 100%; margin-top: 2px; }
+.buil-check { margin: 2px 0; }
+div.detail ul { display: flex; flex-wrap: wrap; gap: 2px 4px; margin: 2px 0; padding: 0; list-style: none; }
+div.detail li span { margin-right: 4px; padding: 1px 4px; background: #ddd; border-radius: 2px; color: #636363; }
+table.buil-biko { width: 100%; margin-bottom: 2px; table-layout: fixed; border: 1px solid #ccc; }
+table.buil-biko th { background: #ddd; font-weight: bold; text-align: center; }
+table.buil-biko td { padding-left: 4px; }
+table.buil-biko.sales { border-color: #69c; background: #def; }
+table.buil-biko.sales th { background: #69c; color: #fff; }
+table.ownerlist td { border: 0; border-bottom: 1px solid #eee; padding: 1px 3px; }
+table.bukken { margin-top: 2px; font-size: 12px; }
+table.bukken th { padding: 1px 2px; }
+table.bukken td { padding: 1px 2px; }
+table.bukken tbody.aki1 td, table.bukken tbody.aki2 td, table.bukken tbody.aki3 td, table.bukken tbody.aki4 td { background: #ffc; }
+table.bukken tbody.aki9 td { background: #ddd; color: #999; }
+table.bukken td.yoto { color: #aaa; text-align: center; }
+table.bukken td.yoto.on { background: #666 !important; color: #fff; }
+.drawStat1 { background: #99f; color: #000; text-align: center; }
+.drawimg { width: 64px; height: 48px; background: repeating-linear-gradient(0deg,#fff,#fff 7px,#ccc 7px,#ccc 8px); border: 1px solid #bbb; }
+.facility .tt { margin: 0 2px 0 6px; padding: 0 3px; background: #ddd; }
+</style>
+<script src="../shared/mock-data.js"></script>
+</head>
+<body>
+<div class="canvas">
+
+<div class="proposal-bar">
+  <span class="stamp">提案用イメージ</span>
+  <span>Option 1 現行UI踏襲</span>
+  <span>業務フロー:</span>
+  <a href="adm-073.html">1 顧客設定</a> →
+  <a class="cur" href="adm-030.html">2 物件一覧</a> →
+  <a href="adm-012.html">3 ビル詳細</a> →
+  <a href="adm-096.html">4 レポート ビル設定</a> →
+  <a href="adm-086.html">5 レポートリスト</a>
+  <span class="sp">データはすべて架空です</span>
+</div>
+
+<!-- menu -->
+<div id="menu" data-item="030-01">
+  <ul>
+    <li><a href="adm-086.html">ﾀﾞｯｼｭﾎﾞｰﾄﾞ</a></li>
+    <li class="cur"><a href="adm-030.html">物件</a></li>
+    <li><a href="adm-073.html">顧客</a></li>
+    <li><a>特集</a></li><li><a>エリア特集</a></li><li><a>相場</a></li><li><a>オーナー</a></li><li><a>路線</a></li><li><a>マスター</a></li><li><a>スタッフ</a></li><li><a>ログ</a></li>
+    <li class="loginname" data-item="030-02">ログインユーザー：<span id="loginName"></span> さん</li>
+  </ul>
+</div>
+
+<div id="submenu">
+  <div class="frame">
+    <div><span class="title" data-item="030-03">一時保存</span><span>4</span>棟(<span>8</span>件)
+      <a href="adm-096.html" title="一時保存の設定（顧客名・タイトル・種別）→ レポート ビル設定へ"><button data-item="030-04"><span class="g edit">✎</span>編集</button></a>
+      <button data-item="030-05"><span class="g add">+</span>結果の追加</button>
+      <button data-item="030-06"><span class="g">-</span>結果のクリア</button>
+    </div>
+    <div><span class="title">印刷</span>
+      <input class="f" style="width:200px" placeholder="宛名" data-item="030-07">
+      <button data-item="030-08"><span class="g">P</span>地図</button>
+      <button data-item="030-09"><span class="g">P</span>客分</button>
+      <button data-item="030-10"><span class="g">P</span>控え</button>
+    </div>
+    <div><button data-item="030-11"><span class="g add">+</span>新規ビル作成</button></div>
+    <div><span class="title">管理</span>
+      <button data-item="030-12"><span class="g">設</span>汎用ﾁｪｯｸ</button>
+      <button data-item="030-13"><span class="g">↓</span>ﾀﾞｳﾝﾛｰﾄﾞ</button>
+      <button data-item="030-14"><span class="g">↓</span>連携用DL</button>
+    </div>
+    <div><span class="title">写真UP</span>
+      <button data-item="030-15">外観</button>
+      <button data-item="030-16">物件詳細</button>
+    </div>
+  </div>
+</div>
+
+<div id="condition">
+  <div class="box">
+    <div class="condbox">
+      <table><tr>
+        <td class="title">各種検索</td>
+        <td><button data-item="030-17"><span class="g">+</span>地区</button></td>
+        <td><button data-item="030-18"><span class="g">+</span>路線</button></td>
+        <td><button data-item="030-19"><span class="g">+</span>特徴</button></td>
+        <td><button data-item="030-20"><span class="g">+</span>オーナー</button></td>
+        <td><button data-item="030-21"><span class="g">+</span>顧客</button></td>
+        <td><button data-item="030-22"><span class="g">+</span>チェック</button></td>
+        <td><button data-item="030-23"><span class="g">+</span>詳細</button></td>
+        <td class="fav-title">お気に入り</td>
+        <td data-item="030-24"><select class="f" style="width:220px"><option>株式会社サンプル商事様 神田30-45坪</option></select></td>
+        <td><button data-item="030-25"><span class="g add">+</span>お気に入りに追加</button></td>
+        <td><button data-item="030-26"><span class="g edit">✎</span>お気に入り編集</button></td>
+        <td data-item="030-27"><label><input type="checkbox"> 一時保存の表示</label></td>
+      </tr></table>
+    </div>
+    <table style="width:100%;table-layout:fixed">
+      <colgroup><col width="365"><col width="60"><col width="240"><col width="60"><col width="80"><col><col width="80"></colgroup>
+      <tr>
+        <td data-item="030-28"><ul class="chk" id="akiChk"></ul></td>
+        <th data-item="030-29">物件番号</th>
+        <td><input class="f" style="width:100%" placeholder="17,234,67890"></td>
+        <td data-item="030-30"><label><input type="checkbox"> 入力順</label></td>
+        <th data-item="030-31">ビル名/住所</th>
+        <td><input class="f" style="width:300px" value="神田"></td>
+        <td class="r"><button data-item="030-32"><span class="g">Q</span>検索</button></td>
+      </tr>
+    </table>
+    <table style="width:100%;table-layout:fixed;margin-top:3px">
+      <colgroup><col width="1100"><col></colgroup>
+      <tr>
+        <td data-item="030-33"><ul class="chk" id="builChkCond"></ul></td>
+        <td class="r" data-item="030-34"><select class="f"><option>チェック</option><option>非チェック</option></select> <label><input type="radio" name="ao" checked> AND</label> <label><input type="radio" name="ao"> OR</label></td>
+      </tr>
+    </table>
+    <div id="conditions" data-item="030-35">検索条件: <button><span class="g">-</span>クリア</button>
+      <span>［お気に入り］株式会社サンプル商事様 神田30-45坪 ／［空き］空・未解約・先行有・申込有・内定有 ／［地区］千代田区・中央区 ／［坪数］30〜45坪 ／［賃料］〜20,000円/坪</span>
+    </div>
+  </div>
+</div>
+
+<div id="main">
+  <div class="pager" data-item="030-36">
+    <div><b id="total">4</b>棟中、1～4棟を表示</div>
+    <ul><li class="cur">1</li></ul>
+  </div>
+  <table class="digest" data-item="030-37"><tr><th>このページ<br>には</th><td><ul id="digest"></ul></td></tr></table>
+  <div id="list"></div>
+  <p class="note-inline" data-item="030-111">※該当なしの場合「検索条件に見合うビル情報が存在しませんでした。」と表示。</p>
+  <div class="pager"><div>4棟中、1～4棟を表示</div><ul><li class="cur">1</li></ul></div>
+</div>
+
+</div><!-- /canvas -->
+
+<script>
+(function () {
+  var M = window.MOCK;
+  document.getElementById('loginName').textContent = M.staff.sakura;
+  function chips(id, all, on) {
+    document.getElementById(id).innerHTML = all.map(function (l) { return '<li' + (on.indexOf(l) >= 0 ? ' class="on"' : '') + '>' + l + '</li>'; }).join('');
+  }
+  chips('akiChk', M.AKI, ['空', '未解約', '先行有', '申込有', '内定有']);
+  var BCHK = ['図面有', 'パンフ有', '謄本有', '外観有', '詳細写真有', 'チェック6', 'チェック7', 'チェック8', 'チェック9', 'チェック10', 'チェック11', 'チェック12', 'チェック13', 'チェック14', 'チェック15', 'チェック16', 'チェック17', 'チェック18', 'チェック19'];
+  chips('builChkCond', BCHK, []);
+  document.getElementById('digest').innerHTML = M.buildings.map(function (b) { return '<li><a href="#b' + b.code + '">' + b.name + '</a></li>'; }).join('');
+
+  function di(first, id) { return first ? ' data-item="' + id + '"' : ''; }
+  var akiCls = { '空': 0, '未解約': 1, '先行有': 2, '申込有': 3, '内定有': 4, '済': 9 };
+
+  function floorRows(b, f, first) {
+    var akiName = M.AKI[f.aki], cls = 'aki' + akiCls[akiName];
+    var yoto = ['事', '店', '倉', 'マ'].map(function (y, i) { return '<td class="yoto' + (f.yoto.indexOf(y) >= 0 ? ' on' : '') + '"' + di(first && i === 0, '030-98') + '>' + y + '</td>'; }).join('');
+    var fa = M.yen(f.feePer + f.pubPer);
+    return '<tbody class="' + cls + '">' +
+      '<tr>' +
+        '<td class="c"' + di(first, '030-101') + '><input type="checkbox"' + (b.code === '010231' && f.aki < 3 ? ' checked' : '') + '></td>' +
+        '<td class="c" colspan="4"><span class="ib edit" title="フロア詳細（別画面・本モック対象外）">✎</span> ' + f.kai + '</td>' +
+        '<td class="c">' + f.name + '</td><td class="c">' + f.type + '</td>' +
+        '<td class="c" rowspan="2">' + f.gn + '</td>' +
+        '<td class="r" rowspan="2">' + f.tsubo.toFixed(2) + '坪<br>' + f.metor.toFixed(2) + '㎡</td>' +
+        '<td class="c" rowspan="2">' + f.hosho + '</td><td class="c" rowspan="2">' + f.reikin + '</td>' +
+        '<td class="r" rowspan="2">' + M.yen(f.feeTotal) + '<br>(' + M.yen(f.feePer) + ')</td>' +
+        '<td class="r" rowspan="2">' + M.yen(f.pubTotal) + '<br>(' + M.yen(f.pubPer) + ')</td>' +
+        '<td class="c" rowspan="2">' + f.koshin + '</td><td class="c" rowspan="2">' + f.shokyaku + '</td><td class="c" rowspan="2">' + f.nyukyo + '</td>' +
+        '<td class="c"' + di(first, '030-93') + '>' + fa + '</td><td class="c"' + di(first, '030-94') + '></td><td class="c"' + di(first, '030-95') + '></td>' +
+        '<td class="c"' + di(first, '030-96') + '>' + f.staff + '</td>' +
+        '<td' + di(first, '030-97') + '><div class="drawStat1">図面</div></td>' +
+      '</tr><tr>' +
+        '<td class="c" rowspan="3"' + di(first, '030-102') + '>' + (b.status === 'WEB表示' ? '<span class="ib" title="WEB掲載">W</span>' : '') + '</td>' + yoto +
+        '<td class="c"' + di(first, '030-99') + '>' + akiName + '</td><td class="c undef"' + di(first, '030-100') + '>' + f.no + '</td>' +
+        '<td class="c">' + f.akiDate.slice(5) + '</td><td class="c"></td><td class="c"></td><td class="c">' + f.akiDate + '</td>' +
+        '<td class="c" rowspan="3"><div class="drawimg" title="図面サムネイル"></div></td>' +
+      '</tr><tr>' +
+        '<td colspan="7"><button' + di(first, '030-103') + '><span class="g">≡</span>入居履歴</button></td>' +
+        '<td class="facility" colspan="5"' + di(first, '030-104') + '><span class="tt">空</span>' + f.aircon + '<span class="tt">床</span>' + f.floorSpec + '<span class="tt">ト</span>' + f.toilet + '<span class="tt">天</span>' + f.height + '</td>' +
+        '<td colspan="3"' + di(first, '030-105') + '>ﾏｲｿｸ: <a>' + f.staff + ' ' + f.akiDate.slice(5) + '</a> <span class="ib edit">✎</span></td>' +
+        '<td' + di(first, '030-106') + '></td><td class="c"' + di(first, '030-107') + '></td><td colspan="2"' + di(first, '030-108') + '></td>' +
+      '</tr><tr>' +
+        '<td colspan="7"' + di(first, '030-109') + '></td><td colspan="12"' + di(first, '030-110') + '>' + (f.memo || '&nbsp;') + '</td>' +
+      '</tr></tbody>';
+  }
+
+  function builBlock(b, first) {
+    var s = b.spec, k = b.kozo, c = b.contract;
+    var addr = b.pref + b.chikuName + b.address + b.cyoume + '-' + b.banchi + '-' + b.gou;
+    var stations = '<table class="list" style="border:0">' + b.stations.map(function (e) { return '<tr><td style="border:0">' + e.rosen + ' ' + e.eki + '</td><td class="r" style="border:0;width:50px">' + e.tm + '分</td></tr>'; }).join('') + '</table>';
+    var owners = '<table class="ownerlist" style="width:100%">' + b.owners.map(function (o) {
+      return '<tr><td class="c" style="width:20px"><input type="radio" name="o' + b.code + '"></td><td class="c" style="width:40px">' + o.priority + '</td><td style="width:100px">' + o.checkDate + '</td><td>' + o.code + o.name +
+        '</td><td style="width:100px">' + o.bunrui + '</td><td style="width:250px">' + o.comment + '</td><td class="r" style="width:120px">' + o.tel + '</td></tr>' +
+        '<tr><td></td><td class="c">' + o.type + '</td><td>' + o.staff + '</td><td colspan="2">' + o.biko + '</td><td>' + o.holiday + '</td><td class="r">' + o.pr + '</td></tr>';
+    }).join('') + '</table>';
+    var chips = BCHK.map(function (l) { return '<li' + (b.checks.indexOf(l) >= 0 ? ' class="on"' : '') + '>' + l + '</li>'; }).join('');
+    var CON = [c.teiki + (c.teikiMemo ? ':' + c.teikiMemo : '')];
+    if (c.tatekae) CON.push('建替予定' + c.tatekae); if (c.hosho) CON.push('保証契約' + c.hosho + (c.hoshoMemo ? ':' + c.hoshoMemo : ''));
+    if (c.genjo) CON.push('原状回復' + c.genjo + (c.genjoMemo ? ':' + c.genjoMemo : '')); if (c.completeDoc === '有') CON.push('検査済証有り');
+    var det = [
+      ['竣工', k.completion + (k.renewal ? '(' + k.renewal + ')' : ''), '030-58'], ['階建て', k.ground + ' F / ' + (k.underground ? 'B' + k.underground + ' F' : '-') + '(' + k.architect + ')', '030-59'],
+      ['耐震', k.taishin1 + ' ' + (k.taishin2 || ''), '030-60'], ['基準階', k.baseFloor.toFixed(2), '030-61'], ['延床面積', k.sumTsubo.toFixed(2) + '坪', '030-62'],
+      ['EV', s.ev, '030-63'], ['P', '総：' + (s.p === '有' ? '有(' + (s.pTotal || '-') + ')' : s.p), '030-64'], ['光', s.hikari, '030-65'], ['ｾｷｭﾘﾃｨ', s.security, '030-66'],
+      ['24H使用', s.usetime + (s.usetimeMemo ? '(' + s.usetimeMemo + ')' : ''), '030-67'], ['ｴﾝﾄﾗﾝｽ', s.entrance + (s.entranceMemo ? '(' + s.entranceMemo + ')' : ''), '030-68'],
+      ['貸会', s.kashiKai ? '有' : '無', '030-69'], ['貸倉', s.kashiSou ? '有' : '無', '030-70'], ['駐輪', s.churin ? '有' : '無', '030-71'], ['自家発電', s.jikaHatuden ? '有' : '無', '030-72'],
+      ['多トイレ', s.multiToilet ? '有' : '無', '030-73'], ['特殊ニーズ', s.specialNeeds + (s.specialNeedsMemo ? '：' + s.specialNeedsMemo : ''), '030-74']
+    ].map(function (d) { return '<li' + di(first, d[2]) + '><span>' + d[0] + '</span>' + d[1] + '</li>'; }).join('') +
+      '<li' + di(first, '030-75') + '><span>謄本</span><span class="ib">PDF</span></li><li' + di(first, '030-76') + '><span>パンフ</span><span class="ib">PDF</span></li>';
+    var floors = b.floors.map(function (f, i) { return floorRows(b, f, first && i === 0); }).join('');
+
+    return '<div class="buil" id="b' + b.code + '">' +
+      '<table class="list"><colgroup><col width="65"><col width="300"><col><col width="300"><col width="220"><col width="80"><col width="100"></colgroup>' +
+      '<tr><th' + di(first, '030-38') + '>' + b.code + '</th>' +
+        '<th class="l" colspan="2"><table style="width:100%"><tr><td style="width:18px"><a href="adm-012.html" class="ib edit" title="ビル詳細"' + di(first, '030-39') + '>✎</a></td>' +
+        '<td' + di(first, '030-40') + '><a href="adm-012.html">' + b.name + '</a> （' + b.kana + '）</td><td' + di(first, '030-41') + '>' + (b.oldName ? '旧：' + b.oldName : '') + '</td>' +
+        '<td class="r"><span class="ib" title="内覧"' + di(first, '030-42') + '>内</span></td></tr></table></th>' +
+        '<th class="l"><span class="ib" title="Google地図"' + di(first, '030-43') + '>M</span> <span class="ib edit" title="地図設定"' + di(first, '030-44') + '>✎</span> <span' + di(first, '030-45') + '>' + addr + '</span></th>' +
+        '<th class="l"><span' + di(first, '030-46') + '>' + b.checkDate.replace(/\/0/g, '/') + ' ' + b.checkStaff + '</span> <button' + di(first, '030-47') + ' style="color:#333">10/07 確認</button></th>' +
+        '<th><span class="ib" title="WEBプレビュー"' + di(first, '030-48') + '>W</span> <span' + di(first, '030-49') + '>(' + b.photos + ')</span></th>' +
+        '<th class="builstatus ' + b.statusClass + '"' + di(first, '030-50') + '>' + b.status + '</th></tr>' +
+      '<tr><td class="img t"><div class="thumb" title="外観写真"' + di(first, '030-51') + '></div>' +
+        '<ul class="locate"' + di(first, '030-52') + '><li' + (b.locate.street ? ' class="on"' : '') + '>大</li><li' + (b.locate.corner ? ' class="on"' : '') + '>角</li><li' + (b.locate.eki ? ' class="on"' : '') + '>駅</li></ul>' +
+        (first ? '<button data-item="030-53"><span class="g">≡</span>案内</button>' : '') +
+        '<button' + di(first, '030-54') + '>契約(' + c.history + ')</button></td>' +
+        '<td class="t"' + di(first, '030-55') + '>' + stations + '</td>' +
+        '<td colspan="5" class="t"' + di(first, '030-56') + '>' + owners + '</td></tr></table>' +
+      '<div class="buil-check"><ul class="chk"' + di(first, '030-57') + '>' + chips + '</ul></div>' +
+      '<div class="detail"><ul>' + det + '</ul></div>' +
+      '<div class="detail"><ul><li' + di(first, '030-77') + '><span>契約</span>' + CON.join('、') + '</li></ul></div>' +
+      '<table class="buil-biko sales"><colgroup><col width="40"><col></colgroup><tr><th' + di(first, '030-78') + '>営業</th><td>' + b.biko.sales + '</td></tr></table>' +
+      '<table class="buil-biko"><colgroup><col width="40"><col><col width="40"><col></colgroup><tr><th' + di(first, '030-79') + '>外部</th><td>' + b.biko.external + '</td><th' + di(first, '030-80') + '>依頼</th><td>' + b.biko.request + '</td></tr></table>' +
+      '<table class="list bukken"><colgroup><col width="24"><col width="20"><col width="20"><col width="20"><col width="20"><col width="80"><col width="80"><col width="20"><col width="85"><col width="90"><col width="60"><col width="90"><col width="90"><col width="60"><col width="60"><col width="80"><col width="80"><col width="80"><col width="80"><col><col width="68"></colgroup>' +
+      '<thead><tr><th rowspan="2"' + di(first, '030-81') + '><span class="ib">P</span><br><input type="checkbox"></th><th colspan="4"' + di(first, '030-82') + '>階</th><th' + di(first, '030-83') + '>室名</th><th rowspan="2"' + di(first, '030-84') + '>種別</th>' +
+        '<th class="r" colspan="2"' + di(first, '030-85') + '>坪数</th><th rowspan="2"' + di(first, '030-86') + '>保証金／敷金</th><th rowspan="2"' + di(first, '030-87') + '>礼金</th><th' + di(first, '030-88') + '>賃料</th><th' + di(first, '030-89') + '>共益費</th>' +
+        '<th rowspan="2"' + di(first, '030-90') + '>更新料/<br>再契約料</th><th rowspan="2"' + di(first, '030-91') + '>償却</th><th rowspan="2"' + di(first, '030-92') + '>入居</th>' +
+        '<th rowspan="2"><label><input type="checkbox"> 目安</label></th><th rowspan="2"><label><input type="checkbox"> 交渉</label></th><th rowspan="2"><label><input type="checkbox"> 底値</label></th><th rowspan="2">更新</th><th rowspan="2"><span class="ib edit">✎</span> 図面</th></tr>' +
+        '<tr><th colspan="4">用途</th><th>状態</th><th class="r" colspan="2">平米</th><th>(坪単価)</th><th>(坪単価)</th></tr></thead>' +
+      floors + '</table></div>';
+  }
+
+  document.getElementById('list').innerHTML = M.buildings.map(function (b, i) { return builBlock(b, i === 0); }).join('');
+})();
+</script>
+</body>
+</html>
